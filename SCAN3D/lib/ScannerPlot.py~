@@ -1,0 +1,35 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import matplotlib.pyplot as P
+
+
+class VisualScanner( object ):
+    """
+    """
+    def __init__(self):
+        """
+        """
+    # ------------------- #
+    # - Low Level Tools - #
+    # ------------------- #
+    def _new_axis_(self,axin=None):
+        """
+        """
+        if axin is not None:
+            self.ax  = axin
+            self.fig = self.ax.figure
+        else:
+            self.fig = P.figure(figsize=[6,4])
+            self.ax  = self.fig.add_axes([0.15,0.15,0.75,0.75])
+
+    def show(self):
+        """
+        """
+        if fig not in dir(self):
+            raise ValueError("you never defined a figure. Do so")
+
+        self.fig.canvas.draw()
+        self.fig.show()
+        
+    
