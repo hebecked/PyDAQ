@@ -1,3 +1,3 @@
 
-class dataIO:
+class DAQ:
 	

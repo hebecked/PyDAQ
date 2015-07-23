@@ -66,7 +66,7 @@ class lockin:
 		"""
 		while(overload()):
 			set_range(self.range/2)
-		while(get_signal(avrgn=2)[0]<range/2):
+		while(get_signal(avrgn=2, dyn_range=False)[0]<range/2):
 			set_range(self.range*2)
 		set_range(range)
 
@@ -81,7 +81,7 @@ class lockin:
 		Removes class element and closes serial connection
 		""" 
 		self.__del__()
-		
+
 
 	def __del__(self):
 		self.ser.close()

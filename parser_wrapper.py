@@ -11,12 +11,14 @@ class parsers:
 	being able to store them in a config. While it is still possible to overwrite them with a command line flag.
 	"""
 
+
 	def __init__(self, description):
 		"""Constructor initialising things and setting command line flags for config parsing"""
 		self.parser = argparse.ArgumentParser(description=description + '\nComandline arguments are allways more dominant than a config file.')
 		self.parser.add_argument('-c', '--config', dest="CONFIG", action='store', type=str, default=None, help='Specifies the suplementary config file.')
 		self.parser.add_argument('-sc', '--store-config', dest="SCONFIG", action='store', type=str, default=None, help='Specifies a config file to store modifications.')
 		self.elements = {}
+
 
 	def add_argument(self, name, flag, datatype, group="Defaults", default=None, help='', required=False, multiargs=False, multiargsn='+'):# if conditions for type
 		"""
@@ -35,6 +37,7 @@ class parsers:
 		else:
 			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help)
 		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs}
+
 
 	def done(self):
 		"""
@@ -74,6 +77,7 @@ class parsers:
 						self.elements[name].update({'val': None, 'status': "notset"})
 		return self.elements
 
+
 	def _as_dict(config):
 		"""
 		Converts a ConfigParser object into a dictionary.
@@ -95,7 +99,6 @@ class parsers:
 		return True
 
 
-
 	def get(self,name, propperty='val'):
 		"""
 		Returns by default the value accociated with a variable name.
@@ -106,6 +109,7 @@ class parsers:
 		if propperty=="all":
 			return self.elements[name]
 		return self.elements[name][propperty]
+
 
 	def set(self,name, val, datatype=None, group="Defaults", multiargs=False):
 		"""
