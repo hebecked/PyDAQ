@@ -18,7 +18,7 @@ class parsers:
 		self.parser.add_argument('-sc', '--store-config', dest="SCONFIG", action='store', type=str, default=None, help='Specifies a config file to store modifications.')
 		self.elements = {}
 
-	def add_argument(self, name, flag, datatype, group="Defaults", default=None, help='', required=False, multiargs=False):# if conditions for type
+	def add_argument(self, name, flag, datatype, group="Defaults", default=None, help='', required=False, multiargs=False, multiargsn='+'):# if conditions for type
 		"""
 		Adds an argument to be used and its properties
 		It is recommended to use capital LETTERS
@@ -26,12 +26,12 @@ class parsers:
 		if not isinstance(datatype, type):
 			print "You need to supply a datatype for datatype"
 		if multiargs:
-			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help, nargs='+')
+			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help, nargs=multiargsn)
 		elif datatype==bool:
 			if default==True:
 				self.parser.add_argument(flag, '--' + name, dest=name, action='store_false', type=bool, default=True, help=help)
 			else:
-				self.parser.add_argument(flag, '--' + name, dest=name, action='store_true', type=bool, default=True, help=help)
+				self.parser.add_argument(flag, '--' + name, dest=name, action='store_true', type=bool, default=False, help=help)
 		else:
 			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help)
 		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs}
