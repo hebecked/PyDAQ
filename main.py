@@ -4,6 +4,7 @@ import os, sys
 from parser_wrapper import parsers
 import GUI
 import DAQ
+import multiprocessing
 
 """
 Definig and reading input parameters and config Files.
@@ -21,6 +22,8 @@ parser.add_argument( "MonochromatorPort", "-mp", str, group="Monochromator", def
 parser.add_argument( "RotationalPlatformPort", "-rp", str, group="RotationalPlatform", default=None, help='Sets the port for the RotationalPlatform.', required=True)
 parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner", default=[0,100], help='Please supply a safety range along the x-axis for your experiment in units of percent.', multiargs=True, multiargsn=2, required=True)
 ###print "The following commands are only used for manual control of the devices. If aa instruction is supplied as well the will be run before the files instructions."
+
+##move to sub processes:
 parser.add_argument( "XYZ_ScannerUnit", "-su", str, group="XYZ_Scanner", default="mm", help='Defines the unit in which positions are supplied. (Only for manual use, not valid for instruction files.)')
 parser.add_argument( "XPos", "-xp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
 parser.add_argument( "YPos", "-yp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
@@ -38,7 +41,6 @@ parser.add_argument( "Wavelength", "-wvl", float, group="Monochromator", default
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
 #TODo add flags for showing plots in command line mode
-
 
 arguments=parser.done()
 
@@ -65,4 +67,14 @@ manual positioning of (xyz rot1, rot2, wvl)
 manual read lockin
 safety zone (1 dimension for now)
 
+add option to show plots on comandline
+
+move lower options to
+
+Ad to monochrom file if opened alone
+monochromator:
+optical port (1,2)
+shutter (open, closed)
+grating (nr)
+filter (nr)
 '''
