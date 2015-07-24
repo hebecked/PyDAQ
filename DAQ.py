@@ -6,6 +6,8 @@ class DAQ(multiprocessing.Process):
 
 #make event for done and data taken
 #que/pipe for progressbar
+#needs ports , instruction file
+#output file//handle by data_io
     def __init__(self, task_queue, result_queue):
         multiprocessing.Process.__init__(self)
         self.task_queue = task_queue
