@@ -1,0 +1,20 @@
+# v=1
+#numbers indicate position in each line
+1)measurement/step# 	#continues numeration with integers to accociate measurements to instructions
+2)wavelength 		#wavelength in nm, 0 for white light and-1 for no change 
+3)grating 		#grating number as integer, -1 for no change, -2 for auto adapt(not implemented yet) 
+4)filter 		#filter number as integer, -1 for no change
+5)readLockinr 		#request data from the reference Lock-In
+6)readLockins		#request data from the signal Lock-In
+7)xpos 			#x position for XYZ-Scanner in integers of 10^-5 m 
+8)ypos 			#Y position for XYZ-Scanner in integers of 10^-5 m
+9)zpos 			#Z position for XYZ-Scanner in integers of 10^-5 m
+10)pos(abs/rel/idl)	#Defines if x-,y-andzpos are relative (rel) or absolute (abs) cordinates, set to idle (idl) to not move the scanner at all
+11)vx			#x velocity in int and scanner units 
+12)vy			#y velocity in int and scanner units 
+13)vz			#z velocity in int and scanner units 
+14)alpha 		#Angle for the first rotational platform positive for clowhise rotation and negative for counter clowise rotation
+15)beta			#Angle for the second rotational platform positive for clowhise rotation and negative for counter clowise rotation
+16)gamma		#Angle for the third (not yet there) rotational platform positive for clowhise rotation and negative for counter clowise rotation
+17)pos(abs/rel/idl)	#as 10 but for the rotational platforms/axises
+18)sleep/delay		#Defines a delay time between hardware settings and Lock-In readouts

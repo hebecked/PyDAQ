@@ -1,28 +1,61 @@
 import multiprocessing
-
+from multiprocessing import Pipe, Process
+from Data_io import instructions
 
 
 class DAQ(multiprocessing.Process):
 
-#que for taken data, for progresbar and termination
-#needs ports , instruction file
-#output file//handle by data_io
-    def __init__(self, task_queue, result_queue):
+    def __init__(self, instructions, ports, pipe):
         multiprocessing.Process.__init__(self)
-        self.interrupt signal = task_queue
-        self.result_queue = result_queue
+        self.pipe=pipe
+        #init devices if aplicable
+        if instructions.monochromator:
+            #init monochromator ...
+        if instructions.XYZ_Scanner:
+            #init scanner ...
+
+        self.sLockIn=False
+        self.rLockIn=False
+        self.rotPlatform=False
 
     def run(self):
-        proc_name = self.name
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                # Poison pill means shutdown
-                print '%s: Exiting' % proc_name
-                self.task_queue.task_done()
-                break
-            print '%s: %s' % (proc_name, next_task)
-            answer = next_task()
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
+        for inst in instructions.instructions:
+            if self.pipe.poll():
+                do=self.pipe.recv()
+            if do == "pause":
+                while do=="pause":
+                        print "Relaxing :)"
+                        do=self.pipe.recv()
+            if do == "stop":
+                print "Bye, bye."
+                exit()
+            if do == "continue":
+                    print "Arbeit, Arbeit."
+            # goo through all devices and instructions
+            inst.
+
+needs to pipe:
+        dict_['#']
+        dict_['Wavelength']
+        dict_['rLockIn']
+        dict_['rLockInErr']
+        dict_['sLockIn']
+        dict_['sLockInErr']
+        dict_['rLockInFreq']
+        dict_['rLockInPhase']
+        dict_['sLockInFreq']
+        dict_['sLockInPhase']
+        dict_['Misc']
+
+
+
+            #make dict
+            self.pipe.send(results)
         return	
+
+
+
+    def __del__(self):
+        #close all devices
+
+
