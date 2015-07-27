@@ -3,4 +3,7 @@ pyserial
 quantities
 flufl.enum
 mathplotlib
+pyside
+pyqt4
+pyqt5
 

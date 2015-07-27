@@ -60,6 +60,10 @@ class lockin:
 		self.range=range
 
 
+	def get_frequency():
+		return 1
+
+
 	def dyn_range():
 		"""
 		dynamically changes the ADC detection range according to the current signal.
@@ -69,6 +73,20 @@ class lockin:
 		while(get_signal(avrgn=2, dyn_range=False)[0]<range/2):
 			set_range(self.range*2)
 		set_range(range)
+
+
+
+	def get_timeconstant():
+		return self.get_timeconstant
+
+
+	def set_timeconstant(timeconstant):
+		self.timeconstant=timeconstant
+
+
+	def autoset_timeconstant(periodes=100.):
+		frequency=self.get_frequency()
+		set_timeconstant(float(periodes)/float(frequency))
 
 
 	def overload():
