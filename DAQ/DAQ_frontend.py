@@ -24,11 +24,9 @@ class DAQ_handler(object):
             self.devices['xyz-scanner']=Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False)
 
         if self.instructions.sLockIn:
-        	#init here
         	self.devices['sLockIn']=lockIn(port=ports['sLockIn'])
 
         if self.instructions.rLockIn:
-        	#init here 
         	self.devices['rLockIn']=lockIn(port=ports['rLockIn'])
 
         if self.instructions.rotPlatform:

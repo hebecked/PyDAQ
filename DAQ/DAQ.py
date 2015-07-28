@@ -3,6 +3,7 @@ from multiprocessing import Pipe, Process
 from Data_io import instructions
 from monochromator import CornerStone260
 import Scanner
+import lockin
 
 class DAQ(multiprocessing.Process):
 
