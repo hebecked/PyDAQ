@@ -63,12 +63,13 @@ class instructions(object):
 						version=i if i else version
 				elif version==1:
 					'''
-					1)measurement/step# 
-					2)wavelength 
-					3)grating 
-					4)filter 
-					5)readLockinr 
-					6)readLockins
+					0)measurement/step# 
+					1)wavelength 
+					2)grating 
+					3)filter 
+					4)readLockinr 
+					5)readLockins
+					6)avrgn
 					7)xpos 
 					8)ypos 
 					9)zpos 
@@ -89,16 +90,16 @@ class instructions(object):
 						self.rLockIn=True
 					if bool(inst[5]):
 						self.sLockIn=True
-					if inst[9] != "idl":
+					if inst[10] != "idl":
 						self.XYZ_Scanner=True
-					if inst[16] != "idl":
+					if inst[17] != "idl":
 						self.rotPlatform=True
 					TODO_dict={}
-					task=["#","wavelength","grating","filter","readLockinr","readLockins","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]:
+					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]:
 					for i in range(len(task)):
 						if i==4 or i==5:
 							TODO_dict.update({task[i]:bool(inst[i])})
-						elif i==9 or i==16:
+						elif i==10 or i==17:
 							TODO_dict.update({task[i]:str(inst[i])})
 						else:
 							TODO_dict.update({task[i]:int(inst[i])})

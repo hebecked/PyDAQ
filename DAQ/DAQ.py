@@ -1,25 +1,20 @@
 import multiprocessing
 from multiprocessing import Pipe, Process
 from Data_io import instructions
-
+from monochromator import CornerStone260
+import Scanner
 
 class DAQ(multiprocessing.Process):
 
-    def __init__(self, instructions, ports, pipe):
+    def __init__(self, instructions, devices, pipe):
         multiprocessing.Process.__init__(self)
         self.pipe=pipe
-        #init devices if aplicable
-        if instructions.monochromator:
-            #init monochromator ...
-        if instructions.XYZ_Scanner:
-            #init scanner ...
+        self.instructions=instruction
+        self.devices=devices
 
-        self.sLockIn=False
-        self.rLockIn=False
-        self.rotPlatform=False
 
     def run(self):
-        for inst in instructions.instructions:
+        for inst in self.instructions.instructions:
             if self.pipe.poll():
                 do=self.pipe.recv()
             if do == "pause":
@@ -31,8 +26,25 @@ class DAQ(multiprocessing.Process):
                 exit()
             if do == "continue":
                     print "Arbeit, Arbeit."
-            # goo through all devices and instructions
-            inst.
+
+            '''Go through all devices and instructions.'''
+            results={'#':inst["#"]}
+            if instructions.monochromator:
+                if inst["wavelength"]>=0:
+                    devices['monochromator'].GoWave(inst["wavelength"])
+                if inst["grating"]>=0:
+                    devices['monochromator'].Grat(inst["grating"])
+                if inst["filter"]>=0:
+                    devices['monochromator'].Filter(inst["filter"])
+            if instructions.XYZ_Scanner:
+                #do I have to use a sleep after this?
+
+
+
+            if instructions.monochromator:
+                results.update({"Wavelength":self.monochromator.GetWave()})
+            else:
+                results.update({"Wavelength":-1})
 
 needs to pipe:
         dict_['#']
@@ -57,5 +69,8 @@ needs to pipe:
 
     def __del__(self):
         #close all devices
+
+
+
 
 
