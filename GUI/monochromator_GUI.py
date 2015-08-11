@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from PyQt5.QtCore import QObject
 from PyQt4 import QtCore, QtGui
 import sys
 sys.path.append("..")
