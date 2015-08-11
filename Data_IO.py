@@ -37,11 +37,13 @@ class files(object):
 
 class serialports:
 	import PyQt5.QtSerialPort
-	element = PyQt5.QtSerialPort.QSerialPortInfo()
-	ports=a.availablePorts()
-	realloc=[]
-	for port in ports:
-		realloc.append(port.systemLocation())
+
+	def __init__(self):
+		ports=PyQt5.QtSerialPort.QSerialPortInfo().availablePorts()
+		realloc=[]
+		for port in ports:
+			realloc.append(port.systemLocation())
+		self.ports=realloc
 
 
 class instructions(object):
@@ -95,7 +97,7 @@ class instructions(object):
 					if inst[17] != "idl":
 						self.rotPlatform=True
 					TODO_dict={}
-					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]:
+					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
 					for i in range(len(task)):
 						if i==4 or i==5:
 							TODO_dict.update({task[i]:bool(inst[i])})

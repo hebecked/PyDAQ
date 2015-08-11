@@ -122,14 +122,29 @@ class Scanner( object ):
     # ======================== #
     # -  USAGE METHODS       - #
     # ======================== #
-    def do_refrun(self):
+    def do_refrun(self, stepped=True):
         """
         This function enables to go to [0,0,0] and initialize the (0,0,0)
         """
-        for i in range(3):
-            self._write_("Ref",i+1,None)
+        if stepped:
+            self.do_step_wise_refrun()
+        else:
+            for i in range(3):
+                self._write_("Ref",i+1,None)
             
         self.current_coords = [0,0,0]
+
+
+    def do_step_wise_refrun(self):
+        """
+        This function is the same as do_refrun, but runs each axis individually to minimize possible collisions (preferably up -> back -> right)
+        """
+        for i in range(3):
+            self._write_("Ref",i+1,None)
+            sleep(4)
+        self.current_coords = [0,0,0]
+
+
         
     def load_default_setup(self):
         """
