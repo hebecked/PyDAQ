@@ -94,11 +94,11 @@ class Ui_Monochromatorcontrol(object):
         self.comboBox_3 = QtGui.QComboBox(self.centralwidget)
         self.comboBox_3.setObjectName(_fromUtf8("comboBox_3"))
         self.comboBox_3.addItem(_fromUtf8(""))
-        self.comboBox_3.setItemText(0, QtGui.QApplication.translate("Monochromatorcontrol", "1", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_3.setItemText(0, QtGui.QApplication.translate("Monochromatorcontrol", "Grating 0", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_3.addItem(_fromUtf8(""))
-        self.comboBox_3.setItemText(1, QtGui.QApplication.translate("Monochromatorcontrol", "2", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_3.setItemText(1, QtGui.QApplication.translate("Monochromatorcontrol", "Grating 1", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_3.addItem(_fromUtf8(""))
-        self.comboBox_3.setItemText(2, QtGui.QApplication.translate("Monochromatorcontrol", "3", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_3.setItemText(2, QtGui.QApplication.translate("Monochromatorcontrol", "Grating 2", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout_3.addWidget(self.comboBox_3)
         self.horizontalLayout_3.addLayout(self.verticalLayout_3)
         self.pushButton_3 = QtGui.QPushButton(self.centralwidget)
@@ -122,19 +122,19 @@ class Ui_Monochromatorcontrol(object):
         self.comboBox = QtGui.QComboBox(self.centralwidget)
         self.comboBox.setObjectName(_fromUtf8("comboBox"))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(0, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 1 (properties)", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(0, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 1", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(1, QtGui.QApplication.translate("Monochromatorcontrol", "2", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(1, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 2", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(2, QtGui.QApplication.translate("Monochromatorcontrol", "3", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(2, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 3", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(3, QtGui.QApplication.translate("Monochromatorcontrol", "4", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(3, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 4", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(4, QtGui.QApplication.translate("Monochromatorcontrol", "5", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(4, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 5", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(5, QtGui.QApplication.translate("Monochromatorcontrol", "6", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(5, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 6", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(6, QtGui.QApplication.translate("Monochromatorcontrol", "7", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox.setItemText(6, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 7", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout_4.addWidget(self.comboBox)
         self.horizontalLayout_2.addLayout(self.verticalLayout_4)
         self.pushButton_4 = QtGui.QPushButton(self.centralwidget)
@@ -248,9 +248,17 @@ class Ui_Monochromatorcontrol(object):
         '''
         self.retranslateUi(Monochromatorcontrol)
         QtCore.QObject.connect(self.actionClose, QtCore.SIGNAL(_fromUtf8("activated()")), Monochromatorcontrol.close)
-        QtCore.QObject.connect(self.actionOpen_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.test)
-        QtCore.QObject.connect(self.actionStore_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.test)
+        QtCore.QObject.connect(self.actionOpen_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.error)
+        QtCore.QObject.connect(self.actionStore_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.error)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.connect)
+        QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), self.set_wavelength)
+        QtCore.QObject.connect(self.pushButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), self.set_grating)
+        QtCore.QObject.connect(self.pushButton_4, QtCore.SIGNAL(_fromUtf8("clicked()")), self.set_filter)
         QtCore.QObject.connect(self.pushButton_5, QtCore.SIGNAL(_fromUtf8("clicked()")), self.getInfo)
+        QtCore.QObject.connect(self.pushButton_6, QtCore.SIGNAL(_fromUtf8("clicked()")), self.open_shutter)
+        QtCore.QObject.connect(self.pushButton_7, QtCore.SIGNAL(_fromUtf8("clicked()")), self.close_shutter)
+        QtCore.QObject.connect(self.pushButton_p1, QtCore.SIGNAL(_fromUtf8("clicked()")), self.Port1)
+        QtCore.QObject.connect(self.pushButton_p2, QtCore.SIGNAL(_fromUtf8("clicked()")), self.Port2)
         
         
 
@@ -270,20 +278,39 @@ class Ui_Monochromatorcontrol(object):
         return self.comboBox_2.currentText()
 
     def connect(self):
-        new_comport=get_comport()
+        new_comport=self.get_comport()
         if self.comport==new_comport:
+            self.error(msg="Com Port identical to current Port")
             return
-        self.comport=new_comport
         if self.comport!=None:
-            self.mc.SetSerialPort(self.comport)
+            self.mc.SetSerialPort(new_comport)
         else:
-            self.mc = CornerStone260( port = self.comport)
+            self.mc = CornerStone260( port = new_comport)
+        self.comport=new_comport
         self.init_gratingmenu()
         self.init_filtermenu()
+
+    def set_wavelength(self):
+        if 'mc' not in locals():
+            self.error(msg="Not connected!")
+            return
+        wvl=self.lineEdit_2.text()
+        try:
+            wvl=float(wvl)
+            if wvl<0 or wvl>2000:
+                raise ValueError()
+        except ValueError:
+            self.error(msg="This is not a valid Wavelength!")
+            return
+        self.mc.Units_NM()
+        self.mc.GoWave(wvl)
+        self.textEdit.clear()
+        self.textEdit.append("Wavelength set to " + str(mc.GetWave) + " nm")
 
 
     def init_gratingmenu(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
         for i in range(3):
             gratings=str(i) + " " + mc.GetLabel(i)
@@ -291,49 +318,56 @@ class Ui_Monochromatorcontrol(object):
 
     def init_filtermenu(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
         for i in range(6):
             filters=str(i) + " " + mc.GetFilterLabel(i)
             self.comboBox.setItemText(i, QtGui.QApplication.translate("Monochromatorcontrol", filters, None, QtGui.QApplication.UnicodeUTF8))
 
-    def set_grating():
+    def set_grating(self):
         new_grating=self.comboBox_3.currentIndex()
-        mc.Grat(new_grating)
+        self.mc.Grat(new_grating)
 
-    def set_filter():
+    def set_filter(self):
         new_filter=self.comboBox.currentIndex()
-        mc.Filter(new_filter)
+        self.mc.Filter(new_filter)
 
-    def open_shutter():
+    def open_shutter(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
-        mc.ShutterOpen()
+        self.mc.ShutterOpen()
 
-    def close_shutter():
+    def close_shutter(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
-        mc.ShutterClose()
+        self.mc.ShutterClose()
 
-    def Port1():
+    def Port1(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
-        mc.OutPort(1)
+        self.mc.OutPort(1)
 
-    def Port2():
+    def Port2(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
-        mc.OutPort(2)
-
-    def test(self):
-        print "Hi there"
+        self.mc.OutPort(2)
 
 
     def getInfo(self):
         if 'mc' not in locals():
+            self.error(msg="Not connected!")
             return
         mcinfo=self.mc.GetInfo() #if not complete information compile one
         self.textEdit.clear()
         self.textEdit.append(mcinfo)
+
+    def error(self,msg=""):
+        self.textEdit.clear()
+        self.textEdit.append("Error: " + msg)
 
 
 if __name__ == "__main__":
