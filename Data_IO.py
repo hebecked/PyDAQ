@@ -36,14 +36,45 @@ class files(object):
 
 
 class serialports:
-	import PyQt5.QtSerialPort
+#	import PyQt5.QtSerialPort
+#
+#	def __init__(self):
+#		ports=PyQt5.QtSerialPort.QSerialPortInfo().availablePorts()
+#		realloc=[]
+#		for port in ports:
+#			realloc.append(port.systemLocation())
+#		self.ports=realloc
+	import sys
+	import glob
+	import serial
+
 
 	def __init__(self):
-		ports=PyQt5.QtSerialPort.QSerialPortInfo().availablePorts()
-		realloc=[]
+		"""Lists serial ports
+		:raises EnvironmentError:
+			On unsupported or unknown platforms
+		:returns:
+			A list of available serial ports
+		"""
+		if self.sys.platform.startswith('win'):
+		    ports = ['COM' + str(i + 1) for i in range(256)]
+		elif self.sys.platform.startswith('linux') or self.sys.platform.startswith('cygwin'):
+		    # this is to exclude your current terminal "/dev/tty"
+		    ports = self.glob.glob('/dev/tty[A-Za-z]*')
+		elif sys.platform.startswith('darwin'):
+		    ports = self.glob.glob('/dev/tty.*')
+		else:
+		    raise EnvironmentError('Unsupported platform')
+		result = []
 		for port in ports:
-			realloc.append(port.systemLocation())
-		self.ports=realloc
+		    try:
+		        s = self.serial.Serial(port)
+		        s.close()
+		        result.append(port)
+		    except (OSError, self.serial.SerialException):
+		        pass
+		self.ports=result
+
 
 
 class instructions(object):

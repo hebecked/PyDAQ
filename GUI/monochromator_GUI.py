@@ -28,7 +28,7 @@ class Ui_Monochromatorcontrol(object):
         Monochromatorcontrol.resize(279, 784)
         Monochromatorcontrol.setWindowTitle(QtGui.QApplication.translate("Monochromatorcontrol", "Monochromator control", None, QtGui.QApplication.UnicodeUTF8))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8("colour.jpg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8("UIs/colour.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
         Monochromatorcontrol.setWindowIcon(icon)
         self.centralwidget = QtGui.QWidget(Monochromatorcontrol)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -187,9 +187,9 @@ class Ui_Monochromatorcontrol(object):
         self.pushButton_p2.setObjectName(_fromUtf8("pushButton_p2"))
         self.horizontalLayout.addWidget(self.pushButton_p2)
         self.verticalLayout_p.addLayout(self.horizontalLayout)
-        self.gridLayout.addLayout(self.verticalLayout_p, 8, 0, 1, 1)
+        self.gridLayout.addLayout(self.verticalLayout_p, 10, 0, 1, 1)
         spacerItemp = QtGui.QSpacerItem(20, 29, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem4, 9, 0, 1, 1)
+        self.gridLayout.addItem(spacerItemp, 9, 0, 1, 1)
         '''
         #Monochromator info
         '''
@@ -209,7 +209,7 @@ class Ui_Monochromatorcontrol(object):
         self.textEdit = QtGui.QTextEdit(self.centralwidget)
         self.textEdit.setObjectName(_fromUtf8("textEdit"))
         self.verticalLayout_6.addWidget(self.textEdit)
-        self.gridLayout.addLayout(self.verticalLayout_6, 10, 0, 1, 1)
+        self.gridLayout.addLayout(self.verticalLayout_6, 12, 0, 1, 1)
         Monochromatorcontrol.setCentralWidget(self.centralwidget)
         '''
         #Menu Bar
@@ -225,15 +225,16 @@ class Ui_Monochromatorcontrol(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         Monochromatorcontrol.setStatusBar(self.statusbar)
         self.actionOpen_Config = QtGui.QAction(Monochromatorcontrol)
-        self.actionOpen_Config.setText(QtGui.QApplication.translate("Monochromatorcontrol", "$Open Config", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen_Config.setText(QtGui.QApplication.translate("Monochromatorcontrol", "&Open Config", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen_Config.setShortcut(QtGui.QApplication.translate("Monochromatorcontrol", "Ctrl+O", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen_Config.setObjectName(_fromUtf8("actionOpen_Config"))
         self.actionClose = QtGui.QAction(Monochromatorcontrol)
-        self.actionClose.setText(QtGui.QApplication.translate("Monochromatorcontrol", "$Close", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose.setText(QtGui.QApplication.translate("Monochromatorcontrol", "&Close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setShortcut(QtGui.QApplication.translate("Monochromatorcontrol", "Ctrl+W", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setIconVisibleInMenu(True)
         self.actionClose.setObjectName(_fromUtf8("actionClose"))
         self.actionStore_Config = QtGui.QAction(Monochromatorcontrol)
-        self.actionStore_Config.setText(QtGui.QApplication.translate("Monochromatorcontrol", "$Store Config", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStore_Config.setText(QtGui.QApplication.translate("Monochromatorcontrol", "&Store Config", None, QtGui.QApplication.UnicodeUTF8))
         self.actionStore_Config.setShortcut(QtGui.QApplication.translate("Monochromatorcontrol", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
         self.actionStore_Config.setObjectName(_fromUtf8("actionStore_Config"))
         self.menuFile.addAction(self.actionOpen_Config)
@@ -249,7 +250,7 @@ class Ui_Monochromatorcontrol(object):
         QtCore.QObject.connect(self.actionClose, QtCore.SIGNAL(_fromUtf8("activated()")), Monochromatorcontrol.close)
         QtCore.QObject.connect(self.actionOpen_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.test)
         QtCore.QObject.connect(self.actionStore_Config, QtCore.SIGNAL(_fromUtf8("activated()")), self.test)
-        QtCore.QObject.connect(self.pushButton_5, QtCore.SIGNAL(_fromUtf8("clicked()")), self.getInfo())
+        QtCore.QObject.connect(self.pushButton_5, QtCore.SIGNAL(_fromUtf8("clicked()")), self.getInfo)
         
         
 
@@ -328,6 +329,8 @@ class Ui_Monochromatorcontrol(object):
 
 
     def getInfo(self):
+        if 'mc' not in locals():
+            return
         mcinfo=self.mc.GetInfo() #if not complete information compile one
         self.textEdit.clear()
         self.textEdit.append(mcinfo)
