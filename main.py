@@ -24,20 +24,12 @@ parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner",
 ###print "The following commands are only used for manual control of the devices. If aa instruction is supplied as well the will be run before the files instructions."
 
 ##move to sub processes:
-parser.add_argument( "XYZ_ScannerUnit", "-su", str, group="XYZ_Scanner", default="mm", help='Defines the unit in which positions are supplied. (Only for manual use, not valid for instruction files.)')
-parser.add_argument( "XPos", "-xp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
-parser.add_argument( "YPos", "-yp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
-parser.add_argument( "ZPos", "-zp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
-parser.add_argument( "XPosR", "-xpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
-parser.add_argument( "YPosR", "-ypr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
-parser.add_argument( "ZPosR", "-zpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Will be run before -i.')
 parser.add_argument( "angle1", "-a1", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 1 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
 parser.add_argument( "angle2", "-a2", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 2 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
 parser.add_argument( "angle3", "-a3", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
 parser.add_argument( "angle1r", "-a1r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 1 relative to the current position in units of degree. Will be run before -i.')
 parser.add_argument( "angle2r", "-a2r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 2 relative to the current position in units of degree. Will be run before -i.')
 parser.add_argument( "angle3r", "-a3r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 relative to the current position in units of degree. Will be run before -i.')
-parser.add_argument( "Wavelength", "-wvl", float, group="Monochromator", default=None, help='Allows to set a wavelength manually in units of nm')
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
 #TODo add flags for showing plots in command line mode
