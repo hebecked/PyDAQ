@@ -246,6 +246,57 @@ class Scanner( object ):
         
         self.move_to(*self._requested_coords,
                      unit="scanner",**kwargs)
+
+
+
+    def _real_move_to(self,x,y,z, unit="mm"):
+        """
+        The will move the scanner to x,y,z in absolute Coordinate*
+        """
+
+        target=self.unit_conversion(x,y,z,unit)
+
+        for i,v in enumerate(target):
+            self._write_("Abs",i+1,v)
+
+        self._go_()
+
+
+    def _real_shift_to(self,x,y,z, unit="mm"):
+        """
+        The will move the scanner to x,y,z in comparison to what was their before;
+        *Relative Coordinate*              
+        """
+
+        target=self.unit_conversion(x,y,z,unit)
+
+        for i,v in enumerate(target):
+            self._write_("Rel",i+1,v)
+
+        self._go_()
+
+
+    def unit_conversion(self,x,y,z, unit):
+        if unit=="percent"
+            x = tb.relativepercent_to_value(x,self._x_range)
+            y = tb.relativepercent_to_value(y,self._y_range)
+            z = tb.relativepercent_to_value(z,self._z_range)
+            return np.array([x,y,z])
+
+        if unit=="mm":
+            factor=100
+        elif unit=="system"
+            factor=1
+        elif unit=="cm"
+            factor=1000
+        elif unit=="m"
+            factor=100000
+        elif unit=="mim"
+            factor=0.1
+        elif unit=="dm"
+            factor=10000
+        return factor*np.array([x,y,z])
+
         
     def _get_requested_coordinate_(self,x,y,z, unit="cm",
                                    shift=False):
@@ -593,7 +644,7 @@ if __name__ == '__main__':
 
     parser.add_argument( "GUI", "-gui", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ.')
     parser.add_argument( "Port", "-p", str, group="basics", default=None, help='Sets the com port for the XYZ scanner.', required=True)
-    parser.add_argument( "Inited", "-i", bool, group="basics", default=False, help='Makes the programm assume the scanner is already initialized. Therefore it does not go back to (0,0,0)')
+    parser.add_argument( "Inited", "-i", bool, group="basics", default=False, help='Makes the programm assume the scanner is already initialized. Therefore it does not go back to (0,0,0). This makes it impossible to use some of the safety features.')
     parser.add_argument( "XYZ_ScannerUnit", "-su", str, group="XYZ_Scanner", default="mm", help='Defines the unit in which positions are supplied. (Only for manual use, not valid for instruction files.)')
     parser.add_argument( "XPos", "-xp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm".')
     parser.add_argument( "YPos", "-yp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm".')
