@@ -257,7 +257,8 @@ class Scanner( object ):
         target=self.unit_conversion(x,y,z,unit)
 
         for i,v in enumerate(target):
-            self._write_("Abs",i+1,v)
+            if not v<0:
+                self._write_("Abs",i+1,v)
 
         self._go_()
 
@@ -649,9 +650,52 @@ if __name__ == '__main__':
     parser.add_argument( "XPos", "-xp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm".')
     parser.add_argument( "YPos", "-yp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm".')
     parser.add_argument( "ZPos", "-zp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the z-axis. Supply a unit of measure with -su, the default is "mm".')
-    parser.add_argument( "XPosR", "-xpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i.')
-    parser.add_argument( "YPosR", "-ypr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i.')
-    parser.add_argument( "ZPosR", "-zpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i.')
+    parser.add_argument( "XPosR", "-xpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
+    parser.add_argument( "YPosR", "-ypr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
+    parser.add_argument( "ZPosR", "-zpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
 
     arguments=parser.done()
 
+    if arguments["GUI"]["val"]:
+        print "TODO goto GUI"
+        exit()
+
+    sc=Scanner(self,port=arguments["Port"]["val"], do_refrun=False,smooth_move=False,debug=False)
+
+    if not arguments["Inited"]["val"]:
+        sc.do_step_wise_refrun()
+
+    if arguments["XYZ_ScannerUnit"]["set"]:
+        unit=arguments["XYZ_ScannerUnit"]["val"]
+    else:  
+        unit="mm"
+
+    if arguments["XPos"]["set"] or arguments["YPos"]["set"] or arguments["ZPos"]["set"]:
+        if arguments["XPos"]["set"]:
+            x=arguments["XPos"]["val"]
+        else:
+            x=-1
+        if arguments["YPos"]["set"]:
+            y=arguments["YPos"]["val"]
+        else:
+            y=-1
+        if arguments["ZPos"]["set"]:
+            z=arguments["ZPos"]["val"]
+        else:
+            z=-1
+        sc._real_move_to(x,y,z, unit=unit):
+
+    if arguments["XPosR"]["set"] or arguments["YPosR"]["set"] or arguments["ZPosR"]["set"]:
+        if arguments["XPosR"]["set"]:
+            x=arguments["XPosR"]["val"]
+        else:
+            x=0
+        if arguments["YPosR"]["set"]:
+            y=arguments["YPos"]["val"]
+        else:
+            y=0
+        if arguments["ZPosR"]["set"]:
+            z=arguments["ZPoR"]["val"]
+        else:
+            z=0
+        sc._real_shift_to(x,y,z, unit=unit):
