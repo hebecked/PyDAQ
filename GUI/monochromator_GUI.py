@@ -133,8 +133,6 @@ class Ui_Monochromatorcontrol(object):
         self.comboBox.setItemText(4, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 5", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox.addItem(_fromUtf8(""))
         self.comboBox.setItemText(5, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 6", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.setItemText(6, QtGui.QApplication.translate("Monochromatorcontrol", "Filter 7", None, QtGui.QApplication.UnicodeUTF8))
         self.verticalLayout_4.addWidget(self.comboBox)
         self.horizontalLayout_2.addLayout(self.verticalLayout_4)
         self.pushButton_4 = QtGui.QPushButton(self.centralwidget)
