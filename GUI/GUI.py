@@ -62,44 +62,47 @@ class MyDynamicMplCanvas(MyMplCanvas):
         self.draw()
 
 class MainWindow(QtGui.QMainWindow):
-	def __init__(self):
-		QtGui.QMainWindow.__init__(self)
-		self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-		self.setWindowTitle("PyDAQ")
+    def __init__(self):
+        QtGui.QMainWindow.__init__(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowTitle("PyDAQ")
 
-		self.file_menu = QtGui.QMenu('&File', self)
-		self.file_menu.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
-		self.menuBar().addMenu(self.file_menu)
+        self.file_menu = QtGui.QMenu('&File', self)
+        self.file_menu.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        self.menuBar().addMenu(self.file_menu)
 
-		self.help_menu = QtGui.QMenu('&Help', self)
-		self.menuBar().addSeparator()
-		self.menuBar().addMenu(self.help_menu)
+        self.help_menu = QtGui.QMenu('&Help', self)
+        self.menuBar().addSeparator()
+        self.menuBar().addMenu(self.help_menu)
 
-		self.help_menu.addAction('&About', self.about)
+        self.help_menu.addAction('&About', self.about)
 
-		self.main_widget = QtGui.QWidget(self)
+        self.main_widget = QtGui.QWidget(self)
 
-		l = QtGui.QVBoxLayout(self.main_widget)
-		sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
-		dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100)
-		l.addWidget(sc)
-		l.addWidget(dc)
+        l = QtGui.QVBoxLayout(self.main_widget)
+        sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        l.addWidget(sc)
+        l.addWidget(dc)
 
-		self.main_widget.setFocus()
-		self.setCentralWidget(self.main_widget)
+        self.main_widget.setFocus()
+        self.setCentralWidget(self.main_widget)
 
-		self.statusBar().showMessage("All hail matplotlib!", 20000)
+        self.statusBar().showMessage("All hail matplotlib!", 20000)
 
-	def fileQuit(self):
-		self.close()
+    def fileQuit(self):
+        self.close()
 
-	def closeEvent(self, ce):
-		self.fileQuit()
+    def about(self):
+        QtGui.QMessageBox.about(self, "About","""Data Aquisition system for the astroparticle group at the Humbolt University berlin\nWriten by Dustin Hebecker, Mickael Rigault and Daniel Kuesters.""")
 
-	def about(self):
-		QtGui.QMessageBox.about(self, "About","""Data Aquisition system for the astroparticle group at the Humbolt University berlin\nWriten by Dustin Hebecker, Mickael Rigault and Daniel Kuesters.""")
-
-
+    def closeEvent(self, event):
+        reply = QtGui.QMessageBox.question(self, 'Message',"Are you sure to quit?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            elf.fileQuit()
+            event.accept()
+        else:
+            event.ignore()
 
 if __name__=='__main__':
 	progname = os.path.basename(sys.argv[0])
