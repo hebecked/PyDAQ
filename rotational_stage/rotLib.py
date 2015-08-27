@@ -14,6 +14,7 @@ class rotControler:
 		self.ser.flushInput()
 		self.ser.flushOutput()
 		self.ser.flush()
+		self.ser.close()
         self._dest = "\x11"
         '''
         # Provide defaults
@@ -27,9 +28,13 @@ class rotControler:
         self._n_channels = 0
         self._channel = ()
         '''
-        # Perform a HW_REQ_INFO to figure out the model number, serial number,
-        req_packet =  self.makePacket(message_id=commands.HW_REQ_INFO,param1="\x00",param2="\x00",dest=self._dest,source="\x01",data=None)
-        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=32, decode=False)    
+        #initialisation
+		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x21"))
+		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x22"))
+		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x23"))
+		# Perform a HW_REQ_INFO to figure out the model number, serial number,
+        req_packet =  self.makePacket(commands.HW_REQ_INFO,"\x00","\x00",self._dest)
+        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=32)    
         self._serial_number = str(hw_info["data"][0:4]).encode('hex')
 		self._model_number = str(hw_info["data"][4:12]).replace('\x00', '').strip()
 		self._hw_type = struct.unpack('<H', str(hw_info["data"][12:14]))[0] ## should be 44 or 45 as integer. 45=> 'Multi-channel controller motherboard',44=>'Brushless DC controller',else => 'Unknown type: {}'.format(hw_type_int)
@@ -42,7 +47,7 @@ class rotControler:
         # Create a tuple of channels of length _n_channel_type
         #if self._n_channels > 0:
         #    self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
-		self.ser.close()
+
 
 
 	def makePacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
@@ -128,7 +133,7 @@ class rotControler:
 
 class rotPlatform():
 
-	def __init__(self,rotControler,platform, init=True):
+	def __init__(self,rotControler, platform, init=True):
 		self.rotControler=rotControler
 		if platform==0
 			self.num="\x21"
@@ -140,38 +145,50 @@ class rotPlatform():
 			self.num="\x23"
 			self.bay="\x03"
 		else:
-			print "error"
-			exit(0)
-		if init:
-			self.goHome()
+			raise ValueError("You must choose a platform channel between [0-2].")
+		if not init:
+			self.getPos()
+			return
+		if not self.bayOccupied()
+			raise AttributeError("Bay " + str(platform) + "is empty.")
+		commands.HW_REQ_INFO
+		commands.HW_GET_INFO
+		self.enable()
+		self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num) )
+		self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num) )
+##Set all basic params like vel, see page 2 (use as default)
 
+		self.goHome()
 
-	def goHome(self):
+	def _sendInstructionPacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
+		self.rotControler.instruction( self.rotControler.makePacket(message_id,param1,param2,dest,source,data) )
+
+	def getPos(self):
+		#self.pos=x
+
+    def enabled(self):
+        pkt = self.rotControler.makePacket(commands.MOD_REQ_CHANENABLESTATE, param1=self.bay, param2="\x00", dest=self.rotControler._dest)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOD_GET_CHANENABLESTATE)
+        return not bool(resp["param2"] - 1)
+
+    def enable(self, enable=True):
+        pkt = _sendInstructionPacket(commands.MOD_SET_CHANENABLESTATE,param1=self._idx_chan,param2="\x01" if newval else "\x02",dest=self.rotControler._dest)
+
+	def bayOccupied(self):
+		result=self.rotControler.queryInstruction( self.rotControler.makePacket(commands.RACK_REQ_BAYUSED,self.bay,"\x00",self.num), commands.RACK_GET_BAYUSED)
+		if result["param2"]=='\x02':
+			return False
+		elif result["param2"]=='\x01':
+			return True
+		else:
+			raise ValueError("Unexpected return value.")
+
+	def goHome(self):#rework
 		self.ser=serial.Serial(self.port,self.baud,rtscts=self.rtscts)
 		self.ser.write("\x43\x04\x01\x00" + self.num + "\x01")
 		result=self.ser.read(size=6)
 		self.ser.close()
 		self.pos=0
-
-	def checkIfError(self,result):
-		if result=="\x80\x00\x00\x00\x01\x11":
-			print "Error"
-			exit()
-
-
-	def isBayOccupied(self):
-		self.ser=serial.Serial(self.port,self.baud,rtscts=self.rtscts)
-		self.ser.write("\x60\x00" + self.bay + "\x00\x11\x01")
-		result=self.ser.read(size=6)
-		self.ser.close()
-		if result == ('\x61\x00' + self.bay + '\x02\x01\x11'):
-			return False
-		elif result == ('\x61\x00' + self.bay + '\x01\x01\x11'):
-			return True
-		else:
-			print "Error"
-			exit()
-
 
 
 	def stopMove(self):
@@ -181,39 +198,11 @@ class rotPlatform():
 		self.ser.close()
 
 
-
-class ThorLabsInstrument(Instrument):
-
-    def __init__(self, filelike):
-        super(ThorLabsInstrument, self).__init__(filelike)
-        self.terminator = ''
-    
-    def sendpacket(self, packet):
-        self.sendcmd(packet.pack())
-        
-    def querypacket(self, packet, expect=None):
-        """
-        Sends a packet to the connected APT instrument, and waits for a packet
-        in response. Optionally, checks whether the received packet type is
-        matches that the caller expects.
-        """
-        resp = self.query(packet.pack())
-        if not resp:
-            if expect is None:
-                return None
-            else:
-                raise IOError("Expected packet {}, got nothing instead.".format(
-                    expect
-                ))
-        pkt = _packets.ThorLabsPacket.unpack(resp)
-        if expect is not None and pkt._message_id != expect:
-            # TODO: make specialized subclass that can record the offending
-            #       packet.
-            raise IOError("APT returned message ID {}, expected {}".format(
-                pkt._message_id, expect
-            ))
-        return pkt
-
+#########################################################################################
+#########################################################################################
+#########################################################################################
+#########################################################################################
+#########################################################################################
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
     '''
@@ -528,13 +517,16 @@ class APTMotorController(ThorLabsAPT):
             
     _channel_type = MotorChannel
 
+#########################################################################################
+#########################################################################################
+#########################################################################################
+#########################################################################################
 
 
 
 
-
+from flufl.enum import IntEnum
 class commands(IntEnum):
-	from flufl.enum import IntEnum
     # General System Commands
     MOD_IDENTIFY            = 0x0223
     MOD_SET_CHANENABLESTATE = 0x0210
@@ -561,6 +553,7 @@ class commands(IntEnum):
     MOD_GET_DIGOUTPUTS      = 0x0215
 
     # Motor Control Messages
+    MGMSG_HW_NO_FLASH_PROGRAMMING = 0x0018
     MOT_SET_POSCOUNTER      = 0x0410
     MOT_REQ_POSCOUNTER      = 0x0411
     MOT_GET_POSCOUNTER      = 0x0412

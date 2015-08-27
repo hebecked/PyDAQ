@@ -6,7 +6,7 @@ class rotStages:
 
 	def __init__(self,port="/dev/ttyUSB0", unit="deg", Channels=[False,False,False]):
 		self.port=port
-		self.unit=unit
+		self.unit=unit #can be %,rad,deg
 		if available open desired channels and make availible as variable
 
 
@@ -44,6 +44,8 @@ class rotStage:
 		self.ser.write("\x65\x04" + self.bay + "\x01\x11\x01")
 		result=self.ser.read(size=6)
 		self.ser.close()
+
+	def move(self, pos(dir?), rel=False, wait=True"aka block?"):#alternative
 
 	def moveRelLeft(self):
 
