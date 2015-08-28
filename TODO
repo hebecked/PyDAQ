@@ -1,0 +1,10 @@
+Add a if __name__=='__main__' to al libs and allow individual device control
+main GUI (most important settings and one variable plot with default to #step vs signal/ref, buttons to more plots and subg guis for individual devices)
+sub/devices GUIs
+Plot return handler to include in GUI (howto?)
+lockin rading
+test rotational platform or write own script
+write actual daq (initalize, run on update command in seperate sub process)
+
+
+
