@@ -11,6 +11,7 @@
 #####################################
 import numpy as N
 
+
 def kwargs_update(default,**kwargs):
     """
     """
@@ -51,3 +52,35 @@ def value_in_micron(value,unit):
     if unit == "mim":
         return value * 1
     
+
+#######################################
+# -- TIMEOUT FUNCTION              
+#######################################
+import os
+import errno
+from functools import wraps
+import signal
+import sys
+
+def timeout(seconds=10, Status_out=1, error_message=os.strerror(errno.ETIME)):
+    
+    def decorator(func):
+        
+        def _handle_timeout(signum, frame,snifs_mode=True):
+            print "timeout - Loading Failed"
+            print "    %s"%error_message
+            print "Status %d"%Status_out
+            sys.exit(Status_out)
+
+        def wrapper(*args, **kwargs):
+            signal.signal(signal.SIGALRM, _handle_timeout)
+            signal.alarm(seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                signal.alarm(0)
+            return result
+
+        return wraps(func)(wrapper)
+
+    return decorator

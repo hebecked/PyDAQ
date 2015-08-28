@@ -20,7 +20,7 @@ import ScannerPlot     as splot
 baudrate = 115200
 bytesize = 7
 stopbits = 1
-scan_lag = 0.4 # in s
+scan_lag = 0.1 # in s
 parity   = serial.PARITY_EVEN
 # -- Controler Number
 
@@ -49,18 +49,25 @@ class Scanner( object ):
     _vcorrectif           = [1,1,1.01]
     _default_velocity     = 100
     _default_deceleration = 10000
+    _sequencing           = [1,2,3] # Defines the axis sorting
+    _moving_sequence      = [3,2,1] # Defines the axis sorting
     # ----------------- #
     # - Test Purposes - #
     # ----------------- #
     _known_prefixes =  N.asarray(["Acc","Dec","Vel",
                                   "Ref","Rel","Abs"])
+    _known_read_prefixes = N.asarray(["POS"])
+    # ----------------- #
+    # - Read Stuff    - #
+    # ----------------- #
+    _end_message = "\x00"
     
     # =========================== #
     # =  GENERAL INPUT OUTPUT   = # 
     # =========================== #
     def __init__(self,port="/dev/tty.usbserial-FTYK04LVD",
-                 do_refrun=True,smooth_move=True,
-                 debug=True):
+                 do_refrun=False,smooth_move=True,
+                 debug=True,show=True):
         """
         do_refrun:   [bool] starts by moving the scanner to the [0,0,0] position
         smooth_move: [bool] changes the axis velocities to have a smooth move.
@@ -77,10 +84,16 @@ class Scanner( object ):
         # -- This must be done once by scanner switching on/off 
         if do_refrun:
             self.do_refrun()
+        else:
+            self.current_coords = N.asarray(self.read_position())
             
         self._coord_history = []
         self._coord_forward = []
-        
+        # -- Lunch the Visial
+        if show:
+            self.load_plot()
+            self.scannerplot.draw()
+            
     def _connect_serial_(self):
         """
         This function connection the Serial port of the scanner
@@ -122,27 +135,17 @@ class Scanner( object ):
     # ======================== #
     # -  USAGE METHODS       - #
     # ======================== #
-    def do_refrun(self, stepped=True):
+    def do_refrun(self, sequenced=True):
         """
         This function enables to go to [0,0,0] and initialize the (0,0,0)
         """
-        if stepped:
-            self.do_step_wise_refrun()
-        else:
-            for i in range(3):
-                self._write_("Ref",i+1,None)
-            
-        self.current_coords = [0,0,0]
+        for i in self._moving_sequence:
+            self._write_("Ref",axis-1,None)
+            if sequenced:
+                self._go_(wait_for_it=True)
+                
+        self.current_coords = N.asarray([0,0,0])
 
-
-    def do_step_wise_refrun(self):
-        """
-        This function is the same as do_refrun, but runs each axis individually to minimize possible collisions (preferably up -> back -> right)
-        """
-        for i in range(3):
-            self._write_("Ref",i+1,None)
-            sleep(4)
-        self.current_coords = [0,0,0]
 
 
         
@@ -160,7 +163,7 @@ class Scanner( object ):
     # - Absolute Move
     def move_to(self,x,y,z, unit="cm",
                 go=True,smooth_move=None,
-                show=True,
+                show=True,sequenced=True,
                 history_forward=False,clean_forward=True):
         """
         The will move the scanner to x,y,z ; *Absolute Coordinate*
@@ -177,8 +180,13 @@ class Scanner( object ):
 
         smooth_move: [bool/None] if None the default registered value will be used.
                      -> if bool this will overwrite self._smooth_move
-                     
+
+        sequenced: [bool] = will set smooth_move to False =
+              The Scanner will move 1 dimension after the other.
         """
+        if sequenced:
+            smooth_move = False
+            
         # -- What is going to happen
         self._requested_coords = self._get_requested_coordinate_(x,y,z,unit=unit,
                                                                  shift=False)
@@ -199,12 +207,16 @@ class Scanner( object ):
             self._load_smooth_velocities_(*self._requested_shift)
             
         # -- Ok? So sent the command
-        for i,v in enumerate(self._requested_coords):
-            self._write_("Abs",i+1,v)
+        for i in self._moving_sequence:
+            axis = i-1
+            self._write_("Abs",axis,self._requested_coords[axis])
+            if sequenced:
+                self._go_(wait_for_it=True)
 
         # -- And let's go!
         if go:
-            self._go_()
+            if sequenced is False:
+                self._go_()
             # -- Scave what you just did
             if "current_coords" in dir(self):
                 if history_forward:
@@ -246,57 +258,6 @@ class Scanner( object ):
         
         self.move_to(*self._requested_coords,
                      unit="scanner",**kwargs)
-
-
-
-    def _real_move_to(self,x,y,z, unit="mm"):
-        """
-        The will move the scanner to x,y,z in absolute Coordinate*
-        """
-
-        target=self.unit_conversion(x,y,z,unit)
-
-        for i,v in enumerate(target):
-            if not v<0:
-                self._write_("Abs",i+1,v)
-
-        self._go_()
-
-
-    def _real_shift_to(self,x,y,z, unit="mm"):
-        """
-        The will move the scanner to x,y,z in comparison to what was their before;
-        *Relative Coordinate*              
-        """
-
-        target=self.unit_conversion(x,y,z,unit)
-
-        for i,v in enumerate(target):
-            self._write_("Rel",i+1,v)
-
-        self._go_()
-
-
-    def unit_conversion(self,x,y,z, unit):
-        if unit=="percent"
-            x = tb.relativepercent_to_value(x,self._x_range)
-            y = tb.relativepercent_to_value(y,self._y_range)
-            z = tb.relativepercent_to_value(z,self._z_range)
-            return np.array([x,y,z])
-
-        if unit=="mm":
-            factor=100
-        elif unit=="system"
-            factor=1
-        elif unit=="cm"
-            factor=1000
-        elif unit=="m"
-            factor=100000
-        elif unit=="mim"
-            factor=0.1
-        elif unit=="dm"
-            factor=10000
-        return factor*np.array([x,y,z])
 
         
     def _get_requested_coordinate_(self,x,y,z, unit="cm",
@@ -369,11 +330,7 @@ class Scanner( object ):
                      history_forward=False)
         
         
-        
-        
-        
     # -------- 1 axis shifts -------- #
-    
     def shift_side(self,x,unit,vx=None):
         """
         This move along the long axis only
@@ -440,8 +397,50 @@ class Scanner( object ):
         """
         self.scannerplot = splot.VisualScanner(self)
         
+    # ======================== #
+    # - Read Tools           - #
+    # ======================== #
+    def read_position(self):
+        """
+        """
         
+        x = self._read_message_("POSA1/")
+        y = self._read_message_("POSA2/")
+        z = self._read_message_("POSA3/")
+        return int(x), int(y), int(z)
+
+    
+    @tb.timeout(5)
+    def _read_message_(self,input_message,
+                       max_step=100):
+        """
+        SHOULD NOT BE USED DIRECTLY
+        """
+        # -- Input Test -- #
+        if ("A1" in input_message or \
+            "A2" in input_message or \
+            "A3" in input_message) is False:
+            raise ValueError("Unknown input message %s"%input_message)
         
+        if input_message.split("A")[0] not in self._known_read_prefixes:
+            raise ValueError("Unknown input message %s"%input_message)
+        
+        if input_message[-1] != "/":
+            raise ValueError("Incomplete input message (no '/') %s"%input_message)
+            
+        # -- Send the Request -- #
+        self.ser.flushInput()
+        self.ser.write(input_message)
+        
+        message,add = "",""
+        i = 0
+        while add!=self._end_message:
+            add = self.ser.read()
+            message += add
+            i +=1
+            
+        return message.split(self._end_message)[0]
+    
     # ======================== #
     # -  Low level functions - #
     # ======================== #
@@ -469,7 +468,7 @@ class Scanner( object ):
             print "new velocities requested, ",self.velocities
             
         for i,v in enumerate(self.velocities):
-            self._write_("Vel",i+1,v)
+            self._write_("Vel",i,v)
             
     def _load_smooth_velocities_(self,delta_x,delta_y,delta_z):
         """
@@ -501,7 +500,7 @@ class Scanner( object ):
             self.decelerations = list(self.decelerations)*3
         
         for i,d in enumerate(self.decelerations):
-            self._write_("Dec",i+1,d)
+            self._write_("Dec",i,d)
             
 
     # --- Accelerations
@@ -526,7 +525,7 @@ class Scanner( object ):
             self.accelerations = list(self.accelerations)*3
         
         for i,a in enumerate(self.accelerations):
-            self._write_("Acc",i+1,a)
+            self._write_("Acc",i,a)
             
         
     # ======================= #
@@ -553,16 +552,20 @@ class Scanner( object ):
     # ======================= #
     # - The WRITE FUNCTION  - #
     # ======================= #
-    def _go_(self):
+    def _go_(self, wait_for_it=False):
         """
         """
         self.ser.write("Go/")
+        if wait_for_it:
+            print " I'll Wait for 4 secondes -> ToBeImproved"
+            time.sleep(4) # ToBe Chance
+            
         
-    def _write_(self,prefix,axis,value):
+    def _write_(self,prefix,axis,value,sequenced=False):
         """
         prefix: Must be in the _known_prefixes list (e.g., Acc)
         
-        axis:   1, 2 or 3
+        axis:   0,1 or 2 will then use self._sequencing[axis]
 
         value: a positive integer with 6 or less digits
                -> Could be None for Reference run (prefix=Ref)
@@ -574,7 +577,7 @@ class Scanner( object ):
             raise ValueError("%s is not a known prefix"%prefix)
 
         # -- Test the axis number
-        axis_ = N.int(axis)
+        axis_ = N.int(self._sequencing[axis])
         if axis_ not in N.asarray([1,2,3]):
             raise ValueError("axis must be 1, 2, or 3. %d given"%axis)
 
@@ -583,6 +586,7 @@ class Scanner( object ):
             if prefix is not "Ref":
                 raise ValueError("Only Reference run (Ref as prefix) can have None as value")
             self.ser.write("%sA%d/"%(prefix,axis_))
+            print "sleep 1"
             time.sleep(scan_lag)
             return
         try:
@@ -600,9 +604,9 @@ class Scanner( object ):
         # - let's do it.
         self.ser.write(tobewritten)
         print "%s done"%tobewritten
-        
         # - forced pause.
         time.sleep(scan_lag)
+        print "sleep 2"
         print "sleep over"
         
 # ========================== #
@@ -643,16 +647,52 @@ if __name__ == '__main__':
 
     parser=parsers("This is a Monochromator control sub-/main-program for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
 
-    parser.add_argument( "GUI", "-gui", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ.')
-    parser.add_argument( "Port", "-p", str, group="basics", default=None, help='Sets the com port for the XYZ scanner.', required=True)
-    parser.add_argument( "Inited", "-i", bool, group="basics", default=False, help='Makes the programm assume the scanner is already initialized. Therefore it does not go back to (0,0,0). This makes it impossible to use some of the safety features.')
-    parser.add_argument( "XYZ_ScannerUnit", "-su", str, group="XYZ_Scanner", default="mm", help='Defines the unit in which positions are supplied. (Only for manual use, not valid for instruction files.)')
-    parser.add_argument( "XPos", "-xp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm".')
-    parser.add_argument( "YPos", "-yp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm".')
-    parser.add_argument( "ZPos", "-zp", float, group="XYZ_Scanner", default=None, help='Moves in absolute positions on the z-axis. Supply a unit of measure with -su, the default is "mm".')
-    parser.add_argument( "XPosR", "-xpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
-    parser.add_argument( "YPosR", "-ypr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
-    parser.add_argument( "ZPosR", "-zpr", float, group="XYZ_Scanner", default=None, help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
+    parser.add_argument( "GUI", "-gui", bool,
+                         group="config",
+                         default=False,
+                         help='Set this flag to use a graphical user interface to configure and supervise the DAQ.')
+    parser.add_argument( "Port", "-p", str,
+                         group="basics",
+                         default=None,
+                         help='Sets the com port for the XYZ scanner.',
+                         required=True)
+    
+    parser.add_argument( "Inited", "-i", bool,
+                         group="basics",
+                         default=False,
+                         help='Makes the programm assume the scanner is already initialized. Therefore it does not go back to (0,0,0). This makes it impossible to use some of the safety features.')
+    
+    parser.add_argument( "XYZ_ScannerUnit", "-su", str,
+                         group="XYZ_Scanner",
+                         default="mm",
+                         help='Defines the unit in which positions are supplied. (Only for manual use, not valid for instruction files.)')
+    
+    parser.add_argument( "XPos", "-xp", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in absolute positions on the x-axis. Supply a unit of measure with -su, the default is "mm".')
+    
+    parser.add_argument( "YPos", "-yp", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in absolute positions on the y-axis. Supply a unit of measure with -su, the default is "mm".')
+    
+    parser.add_argument( "ZPos", "-zp", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in absolute positions on the z-axis. Supply a unit of measure with -su, the default is "mm".')
+    parser.add_argument( "XPosR", "-xpr", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
+    parser.add_argument( "YPosR", "-ypr", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
+    parser.add_argument( "ZPosR", "-zpr", float,
+                         group="XYZ_Scanner",
+                         default=None,
+                         help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning.')
 
     arguments=parser.done()
 
@@ -683,7 +723,7 @@ if __name__ == '__main__':
             z=arguments["ZPos"]["val"]
         else:
             z=-1
-        sc._real_move_to(x,y,z, unit=unit):
+        sc._real_move_to(x,y,z, unit=unit)
 
     if arguments["XPosR"]["set"] or arguments["YPosR"]["set"] or arguments["ZPosR"]["set"]:
         if arguments["XPosR"]["set"]:
@@ -698,4 +738,4 @@ if __name__ == '__main__':
             z=arguments["ZPoR"]["val"]
         else:
             z=0
-        sc._real_shift_to(x,y,z, unit=unit):
+        sc._real_shift_to(x,y,z, unit=unit)
