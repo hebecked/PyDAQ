@@ -20,7 +20,7 @@ import ScannerPlot     as splot
 baudrate = 115200
 bytesize = 7
 stopbits = 1
-scan_lag = 0.4 # in s
+scan_lag = 0.1 # in s
 parity   = serial.PARITY_EVEN
 # -- Controler Number
 
@@ -54,13 +54,18 @@ class Scanner( object ):
     # ----------------- #
     _known_prefixes =  N.asarray(["Acc","Dec","Vel",
                                   "Ref","Rel","Abs"])
+    _known_read_prefixes = N.asarray(["POS"])
+    # ----------------- #
+    # - Read Stuff    - #
+    # ----------------- #
+    _end_message = "\x00"
     
     # =========================== #
     # =  GENERAL INPUT OUTPUT   = # 
     # =========================== #
     def __init__(self,port="/dev/tty.usbserial-FTYK04LVD",
-                 do_refrun=True,smooth_move=True,
-                 debug=True):
+                 do_refrun=False,smooth_move=True,
+                 debug=True,show=True):
         """
         do_refrun:   [bool] starts by moving the scanner to the [0,0,0] position
         smooth_move: [bool] changes the axis velocities to have a smooth move.
@@ -77,10 +82,16 @@ class Scanner( object ):
         # -- This must be done once by scanner switching on/off 
         if do_refrun:
             self.do_refrun()
+        else:
+            self.current_coords = N.asarray(self.read_position())
             
         self._coord_history = []
         self._coord_forward = []
-        
+        # -- Lunch the Visial
+        if show:
+            self.load_plot()
+            self.scannerplot.draw()
+            
     def _connect_serial_(self):
         """
         This function connection the Serial port of the scanner
@@ -302,11 +313,7 @@ class Scanner( object ):
                      history_forward=False)
         
         
-        
-        
-        
     # -------- 1 axis shifts -------- #
-    
     def shift_side(self,x,unit,vx=None):
         """
         This move along the long axis only
@@ -373,8 +380,50 @@ class Scanner( object ):
         """
         self.scannerplot = splot.VisualScanner(self)
         
+    # ======================== #
+    # - Read Tools           - #
+    # ======================== #
+    def read_position(self):
+        """
+        """
         
+        x = self._read_message_("POSA1/")
+        y = self._read_message_("POSA2/")
+        z = self._read_message_("POSA3/")
+        return int(x), int(y), int(z)
+
+    
+    @tb.timeout(5)
+    def _read_message_(self,input_message,
+                       max_step=100):
+        """
+        SHOULD NOT BE USED DIRECTLY
+        """
+        # -- Input Test -- #
+        if ("A1" in input_message or \
+            "A2" in input_message or \
+            "A3" in input_message) is False:
+            raise ValueError("Unknown input message %s"%input_message)
         
+        if input_message.split("A")[0] not in self._known_read_prefixes:
+            raise ValueError("Unknown input message %s"%input_message)
+        
+        if input_message[-1] != "/":
+            raise ValueError("Incomplete input message (no '/') %s"%input_message)
+            
+        # -- Send the Request -- #
+        self.ser.flushInput()
+        self.ser.write(input_message)
+        
+        message,add = "",""
+        i = 0
+        while add!=self._end_message:
+            add = self.ser.read()
+            message += add
+            i +=1
+            
+        return message.split(self._end_message)[0]
+    
     # ======================== #
     # -  Low level functions - #
     # ======================== #
@@ -516,6 +565,7 @@ class Scanner( object ):
             if prefix is not "Ref":
                 raise ValueError("Only Reference run (Ref as prefix) can have None as value")
             self.ser.write("%sA%d/"%(prefix,axis_))
+            print "sleep 1"
             time.sleep(scan_lag)
             return
         try:
@@ -536,6 +586,7 @@ class Scanner( object ):
         
         # - forced pause.
         time.sleep(scan_lag)
+        print "sleep 2"
         print "sleep over"
         
 # ========================== #
