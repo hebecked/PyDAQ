@@ -7,52 +7,48 @@ import struct
 class rotControler:
 
 	def __init__(self,port="/dev/ttyUSB0"):
-		self.port=port
-		self.baud=115200
-		self.rtscts=True
-		self.ser=serial.Serial(self.port ,self.bau, rtscts=self.rtscts)
-		self.ser.flushInput()
-		self.ser.flushOutput()
-		self.ser.flush()
-		self.ser.close()
+        self.port=port
+        self.baud=115200
+        self.rtscts=True
+        self.ser=serial.Serial(self.port ,self.bau, rtscts=self.rtscts)
+        self.ser.flushInput()
+        self.ser.flushOutput()
+        self.ser.flush()
+        self.ser.close()
         self._dest = "\x11"
         '''
-        # Provide defaults
-        self._serial_number = None
-        self._model_number = None
-        self._hw_type = None
-        self._fw_version = None
-        self._notes = ""
-        self._hw_version = None
-        self._mod_state = None
-        self._n_channels = 0
-        self._channel = ()
+        # Hardware information
+        self._serial_number
+        self._model_number
+        self._hw_type
+        self._fw_version
+        self._notes
+        self._hw_version
+        self._mod_state
+        self._n_channels
+
         '''
         #initialisation
-		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x21"))
-		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x22"))
-		self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x23"))
-		# Perform a HW_REQ_INFO to figure out the model number, serial number,
+        self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x21"))
+        self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x22"))
+        self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x23"))
+        # Perform a HW_REQ_INFO to figure out the model number, serial number,
         req_packet =  self.makePacket(commands.HW_REQ_INFO,"\x00","\x00",self._dest)
         hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=32)    
         self._serial_number = str(hw_info["data"][0:4]).encode('hex')
-		self._model_number = str(hw_info["data"][4:12]).replace('\x00', '').strip()
-		self._hw_type = struct.unpack('<H', str(hw_info["data"][12:14]))[0] ## should be 44 or 45 as integer. 45=> 'Multi-channel controller motherboard',44=>'Brushless DC controller',else => 'Unknown type: {}'.format(hw_type_int)
-		# Note that the fourth byte is padding, so we strip out the first three bytes and format them.
-		self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(str(hw_info["data"][14:18]).encode('hex'))
+        self._model_number = str(hw_info["data"][4:12]).replace('\x00', '').strip()
+        self._hw_type = struct.unpack('<H', str(hw_info["data"][12:14]))[0] ## should be 44 or 45 as integer. 45=> 'Multi-channel controller motherboard',44=>'Brushless DC controller',else => 'Unknown type: {}'.format(hw_type_int)
+        # Note that the fourth byte is padding, so we strip out the first three bytes and format them.
+        self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(str(hw_info["data"][14:18]).encode('hex'))
         self._notes = str(hw_info["data"][18:66]).replace('\x00', '').strip()
-		self._hw_version    = struct.unpack('<H', str(hw_info["data"][78:80]))[0]
-		self._mod_state     = struct.unpack('<H', str(hw_info["data"][80:82]))[0]
-		self._n_channels    = struct.unpack('<H', str(hw_info["data"][82:84]))[0]
-        # Create a tuple of channels of length _n_channel_type
-        #if self._n_channels > 0:
-        #    self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
-
+        self._hw_version    = struct.unpack('<H', str(hw_info["data"][78:80]))[0]
+        self._mod_state     = struct.unpack('<H', str(hw_info["data"][80:82]))[0]
+        self._n_channels    = struct.unpack('<H', str(hw_info["data"][82:84]))[0]
 
 
 	def makePacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
-		#Some sanity checks
-		if param1 is not None or param2 is not None:
+        #Some sanity checks
+        if param1 is not None or param2 is not None:
             has_data = False
         elif data is not None:
             has_data = True
@@ -64,14 +60,14 @@ class rotControler:
             raise ValueError("You must specify either data or parameters.")
         if des is None:
         	raise ValueError("You must specify a instructions destination.")
-		
+        
 		packet=struct.pack("H",message_id)
 		if has_data:
 			data_length=len(data)
 			packet+=struckt.pack("H",data_length)
 			packet+=struckt.pack("B",0x80 | struckt.unpack("B",dest)[0])
 		else:
-			packet+=param1
+            packet+=param1
 			packet+=param2
 			packet+=dest
 		packet+=source
