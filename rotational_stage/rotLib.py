@@ -34,16 +34,16 @@ class rotControler:
         self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x23"))
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         req_packet =  self.makePacket(commands.HW_REQ_INFO,"\x00","\x00",self._dest)
-        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=32)    
+        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=90)    
         self._serial_number = str(hw_info["data"][0:4]).encode('hex')
         self._model_number = str(hw_info["data"][4:12]).replace('\x00', '').strip()
         self._hw_type = struct.unpack('<H', str(hw_info["data"][12:14]))[0] ## should be 44 or 45 as integer. 45=> 'Multi-channel controller motherboard',44=>'Brushless DC controller',else => 'Unknown type: {}'.format(hw_type_int)
         # Note that the fourth byte is padding, so we strip out the first three bytes and format them.
         self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(str(hw_info["data"][14:18]).encode('hex'))
         self._notes = str(hw_info["data"][18:66]).replace('\x00', '').strip()
-        #self._hw_version    = struct.unpack('<H', str(hw_info["data"][78:80]))[0]
-        #self._mod_state     = struct.unpack('<H', str(hw_info["data"][80:82]))[0]
-        #self._n_channels    = struct.unpack('<H', str(hw_info["data"][82:84]))[0]
+        self._hw_version = struct.unpack('<H', str(hw_info["data"][78:80]))[0]
+        self._mod_state = struct.unpack('<H', str(hw_info["data"][80:82]))[0]
+        self._n_channels = struct.unpack('<H', str(hw_info["data"][82:84]))[0]
         # Create a tuple of channels of length _n_channel_type
         #if self._n_channels > 0:
         #    self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
@@ -107,7 +107,7 @@ class rotControler:
         self.ser.write(packet)
         self.ser.close()
 
-    def queryInstruction(self, packet, expected, expectedB=6, decode=True):
+    def queryInstruction(self, packet, expected=None, expectedB=6, decode=True):
         self.ser=serial.Serial(self.port, self.baud, rtscts=self.rtscts)
         self.ser.write(packet)
         recieved=self.ser.read(size=expectedB)
@@ -150,19 +150,23 @@ class rotPlatform():
             self.getPos()
             return
 
-        self.port="/dev/ttyUSB0"
-        self.baud=115200
-        self.rtscts=True
 
-
-        #if not self.bayOccupied():
-        #   raise AttributeError("Bay " + str(platform) + "is empty.")
-        #commands.HW_REQ_INFO
-        #commands.HW_GET_INFO
+        if not self.bayOccupied():
+           raise AttributeError("Bay " + str(platform) + "is empty.")
+        pkt=self.rotControler.makePacket(commands.HW_REQ_INFO, "\x00","\x00",self.num)
+        info_pkt=self.rotControler.queryInstruction(pkt, commands.HW_GET_INFO, expectedB=90,)
         self.enable()
         self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num )
         self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num )
-        ##Set all basic params like vel, see page 2 (use as default)
+        self._sendInstructionPacket(commands.MOD_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00")
+        self._sendInstructionPacket(commands.MOD_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x02\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
+        self._sendInstructionPacket(commands.MOD_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
+        self._sendInstructionPacket(commands.MOD_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
+        self._sendInstructionPacket(commands.MOD_SET_GENMOVEPARAMS,dest=self.num ,data="\x01\x00\x55\x25\x01\x00")
+        self._sendInstructionPacket(commands.MOT_SET_HOMEPARAMS,dest=self.num ,data="\x01\x00\x02\x00\x01\x00\x72\x06\x71\x01\x00\xB0\x00\x00")
+        #removed rel and abs move param
+        self._sendInstructionPacket(commands.MOD_SET_BOWINDEX,dest=self.num ,data="\x01\x00\x00\x00")
+        self._sendInstructionPacket(commands.MOD_SET_PMDJOYSTICKPARAMS,dest=self.num ,data="\x01\x00\x9C\x0A\x67\x02\x38\x15\xCE\x04\x40\x20\x00\x00\x81\x40\x00\x00\x01\x00")
         self.goHome()
 
     def _sendInstructionPacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
@@ -189,19 +193,26 @@ class rotPlatform():
             raise ValueError("Unexpected return value.")
 
     def goHome(self):#rework
-        self.ser=serial.Serial(self.port,self.baud,rtscts=self.rtscts)
-        self.ser.write("\x43\x04\x01\x00" + self.num + "\x01")
-        result=self.ser.read(size=6)
-        self.ser.close()
+        pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED) 
         self.pos=0
 
 
     def stopMove(self):
+        #pkt = self.rotControler.makePacket(commands.MOD_REQ_CHANENABLESTATE, param1=self.bay, param2="\x00", dest=self.rotControler._dest)
+        #resp = self.rotControler.queryInstruction(pkt, commands.MOD_GET_CHANENABLESTATE)
+
         self.ser=serial.Serial(self.port,self.baud,rtscts=self.rtscts)
         self.ser.write("\x65\x04" + self.bay + "\x01\x11\x01")
         result=self.ser.read(size=6)
         self.ser.close()
 
+    def move(self):
+
+
+    def getPos(self):
+
+    #change vel accel 
 
 #########################################################################################
 #########################################################################################
