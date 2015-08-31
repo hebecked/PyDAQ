@@ -29,7 +29,7 @@ class DAQ_handler(object):
         if self.instructions.rLockIn:
         	self.devices['rLockIn']=lockIn(port=ports['rLockIn'])
 
-        if self.instructions.rotPlatform:
+        if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
         	#init here
         	#self.devices['rotPlatform']=
 

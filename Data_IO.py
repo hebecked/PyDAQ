@@ -87,7 +87,7 @@ class instructions(object):
 		self.sLockIn=False
 		self.rLockIn=False
 		self.XYZ_Scanner=False
-		self.rotPlatform=False
+		self.rotPlatform=[False,False,False]
 		with open(instrctionfile,'r') as FILE:
 			for line in FILE:
 				if line[0]=='#':
@@ -125,8 +125,12 @@ class instructions(object):
 						self.sLockIn=True
 					if inst[10] != "idl":
 						self.XYZ_Scanner=True
-					if inst[17] != "idl":
-						self.rotPlatform=True
+					if float(inst[14]) != 0:
+						self.rotPlatform[0]=True
+					if float(inst[15]) != 0:
+						self.rotPlatform[1]=True
+					if float(inst[16]) != 0:
+						self.rotPlatform[2]=True
 					TODO_dict={}
 					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
 					for i in range(len(task)):
@@ -138,6 +142,5 @@ class instructions(object):
 							TODO_dict.update({task[i]:int(inst[i])})
 					self.instructions.append(TODO_dict)
 				else:
-					print "Error instruction file has no (known) version.\nExiting!!!"
-					exit()
+					raise IOError("Instruction file has no (known) version.\nExiting!!!")
 
