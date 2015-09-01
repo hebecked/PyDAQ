@@ -36,13 +36,13 @@ class rotStages:
 
     def convert2Steps(self,units):
         if self.unit=="rad"
-            return units*75091*np.pi/(5.4546*180)
+            return int(units*75091*np.pi/(5.4546*180))
         elif self.unit=="%"
-            return dev_val*75091/(5.4546*3.6)
+            return int(dev_val*75091/(5.4546*3.6))
         elif self.unit=="deg"
-            return dev_val*75091/5.4546
+            return int(dev_val*75091/5.4546)
         elif self.unit=="dev"
-            return dev_val
+            return int(dev_val)
         else:
             raise ValueError("Unknown unit.")
 
@@ -50,8 +50,10 @@ class rotStages:
         self.chan[chan].goHome()
         self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
 
-    def move(self, chan, pos(dir?), rel=False, wait=True"aka block?"):#tobe implemented!!!!!
-
+    def move(self, chan, pos, rel=False, wait=True):#tobe implemented!!!!!
+        if not wait:
+            print "Not supported yet, will continue with wait."
+        self.pos[chan].move(self, rel=rel, pos=pos)
         self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
 
     def jog(self,chan,dir_):
