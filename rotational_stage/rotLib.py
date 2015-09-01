@@ -381,9 +381,9 @@ class commands(IntEnum):
     MOT_MOVE_VELOCITY       = 0x0457
     MOT_MOVE_STOP           = 0x0465
     MOT_MOVE_STOPPED        = 0x0466
-    MOT_SET_BOWINDEX        = 0x0450
-    MOT_REQ_BOWINDEX        = 0x0451
-    MOT_GET_BOWINDEX        = 0x0452
+    MOT_SET_BOWINDEX        = 0x04F4
+    MOT_REQ_BOWINDEX        = 0x04F5
+    MOT_GET_BOWINDEX        = 0x04F6
     MOT_SET_DCPIDPARAMS     = 0x04A0
     MOT_REQ_DCPIDPARAMS     = 0x04A1
     MOT_GET_DCPIDPARAMS     = 0x04A2
