@@ -212,8 +212,8 @@ class rotPlatform:
         else:
             raise ValueError("You must choose a platform channel between [0-2].")
 
-        #if not self.bayOccupied():
-        #   raise AttributeError("Bay " + str(platform) + "is empty.")
+        if not self.bayOccupied():
+           raise AttributeError("Bay " + str(platform) + "is empty.")
 
         if not init:
             if not self.getDevicePos():
@@ -263,7 +263,7 @@ class rotPlatform:
         elif result["param2"]=='\x01':
             return True
         else:
-            raise ValueError("Unexpected return value.")
+            raise ValueError("Unexpected return value (" + str(result["param2"]) + ").")
 
     def goHome(self):#rework
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
