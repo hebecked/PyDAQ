@@ -228,15 +228,15 @@ class rotPlatform:
         self.enable()
         self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num )
         self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num )
-        self._sendInstructionPacket(commands.MOD_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00")
-        self._sendInstructionPacket(commands.MOD_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x01\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
-        self._sendInstructionPacket(commands.MOD_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
-        self._sendInstructionPacket(commands.MOD_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
-        self._sendInstructionPacket(commands.MOD_SET_GENMOVEPARAMS,dest=self.num ,data="\x01\x00\x55\x25\x01\x00")
+        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00")
+        self._sendInstructionPacket(commands.MOT_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x01\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
+        self._sendInstructionPacket(commands.MOT_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
+        self._sendInstructionPacket(commands.MOT_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
+        self._sendInstructionPacket(commands.MOT_SET_GENMOVEPARAMS,dest=self.num ,data="\x01\x00\x55\x25\x01\x00")
         self._sendInstructionPacket(commands.MOT_SET_HOMEPARAMS,dest=self.num ,data="\x01\x00\x02\x00\x01\x00\x72\x06\x71\x01\x00\xB0\x00\x00")
         #removed rel and abs move param
-        self._sendInstructionPacket(commands.MOD_SET_BOWINDEX,dest=self.num ,data="\x01\x00\x00\x00")
-        self._sendInstructionPacket(commands.MOD_SET_PMDJOYSTICKPARAMS,dest=self.num ,data="\x01\x00\x9C\x0A\x67\x02\x38\x15\xCE\x04\x40\x20\x00\x00\x81\x40\x00\x00\x01\x00")
+        self._sendInstructionPacket(commands.MOT_SET_BOWINDEX,dest=self.num ,data="\x01\x00\x00\x00")
+        self._sendInstructionPacket(commands.MOT_SET_PMDJOYSTICKPARAMS,dest=self.num ,data="\x01\x00\x9C\x0A\x67\x02\x38\x15\xCE\x04\x40\x20\x00\x00\x81\x40\x00\x00\x01\x00")
         self.goHome()
 
     def _sendInstructionPacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
