@@ -163,7 +163,7 @@ class rotControler:
             data = None
         if msg_id != expected:
             print 
-            raise ValueError("The return packet (" + msg_id + ") does not match the expected (" + expected+ ").")
+            raise ValueError("The return packet (" + str(msg_id) + ") does not match the expected (" + str(expected) + ").")
         return {"message_id":msg_id, "param1":param1, "param2":param2, "dest":dest, "source":source, "data":data}
 
 
