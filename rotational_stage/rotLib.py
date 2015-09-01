@@ -162,7 +162,8 @@ class rotControler:
             msg_id, param1, param2, dest, source = struct.unpack('<HBBBB', header)
             data = None
         if msg_id != expected:
-            raise ValueError("The return packet does not match the expected.")
+            print 
+            raise ValueError("The return packet (" + msg_id + ") does not match the expected (" + expected+ ").")
         return {"message_id":msg_id, "param1":param1, "param2":param2, "dest":dest, "source":source, "data":data}
 
 
