@@ -265,11 +265,23 @@ class rotPlatform:
         else:
             raise ValueError("Unexpected return value (" + str(result["param2"]) + ").")
 
-    def goHome(self):#rework
+    def goHome(self, block=True):
+        pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED)
+        moving=True
+        while moving:
+            resp = self.getStatus(self)["data"]
+            if resp[10:14]=="\x00\x00\x04\x00":
+                moving = False
+            print resp[10:14]
+        self.getDevicePos()
+        print self.pos
+        self.pos=0
+
+    def _goHome(self):
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
         resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED) 
         self.pos=0
-
 
     def move(self, rel=False, pos=0):
         pos=struct.pack('i',pos)
@@ -309,6 +321,11 @@ class rotPlatform:
 
     def setAcc(self,acc):#not implemented yet
         return False
+
+    def getStatus(self):
+        pkt = self.rotControler.makePacket(commands.MOT_REQ_STATUSUPDATE, param1=self.bay, param2="\x00", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_GET_STATUSUPDATE, expectedB=20)
+        return resp
 
 
 from flufl.enum import IntEnum
