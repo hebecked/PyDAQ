@@ -215,7 +215,7 @@ class rotPlatform:
            raise AttributeError("Bay " + str(platform) + "is empty.")
 
         if not init:
-            if not self.getDevicePos()
+            if not self.getDevicePos():
                 raise ValueError("Device is not initialized.")
         elif init=="Auto":
             if self.getDevicePos():
