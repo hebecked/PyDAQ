@@ -212,8 +212,8 @@ class rotPlatform:
         else:
             raise ValueError("You must choose a platform channel between [0-2].")
 
-        if not self.bayOccupied():
-           raise AttributeError("Bay " + str(platform) + "is empty.")
+        #if not self.bayOccupied():
+        #   raise AttributeError("Bay " + str(platform) + "is empty.")
 
         if not init:
             if not self.getDevicePos():
