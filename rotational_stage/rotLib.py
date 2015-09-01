@@ -132,8 +132,8 @@ class rotControler:
         packet=struct.pack("H",message_id)
         if has_data:
             data_length=len(data)
-            packet+=struckt.pack("H",data_length)
-            packet+=struckt.pack("B",0x80 | struckt.unpack("B",dest)[0])
+            packet+=struct.pack("H",data_length)
+            packet+=struct.pack("B",0x80 | struct.unpack("B",dest)[0])
         else:
             packet+=param1
             packet+=param2
