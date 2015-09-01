@@ -23,25 +23,25 @@ class rotStages:
         self.unit=unit
 
     def convert2Units(self,dev_val):
-        if self.unit=="rad"
+        if self.unit=="rad":
             return dev_val*5.4546*180/(75091*np.pi)
-        elif self.unit=="%"
+        elif self.unit=="%":
             return dev_val*5.4546*3.6/75091
-        elif self.unit=="deg"
+        elif self.unit=="deg":
             return dev_val*5.4546/75091
-        elif self.unit=="dev"
+        elif self.unit=="dev":
             return dev_val
         else:
             raise ValueError("Unknown unit.")
 
     def convert2Steps(self,units):
-        if self.unit=="rad"
+        if self.unit=="rad":
             return int(units*75091*np.pi/(5.4546*180))
-        elif self.unit=="%"
+        elif self.unit=="%":
             return int(dev_val*75091/(5.4546*3.6))
-        elif self.unit=="deg"
+        elif self.unit=="deg":
             return int(dev_val*75091/5.4546)
-        elif self.unit=="dev"
+        elif self.unit=="dev":
             return int(dev_val)
         else:
             raise ValueError("Unknown unit.")
