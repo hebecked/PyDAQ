@@ -1,0 +1,22 @@
+﻿Build started 10/06/2014 12:17:22.
+     1>Project "C:\Users\mrobson\Documents\TFS\APT\Server\APT DLLs\APTDLLClient\APTDLLClient.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /O2 /GL /D WIN32 /D _WINDOWS /D NDEBUG /D _MBCS /D _AFXDLL /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"x64\Release\APTDLLClient.pch" /Fo"x64\Release\\" /Fd"x64\Release\vc110.pdb" /Gd /TP /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /O2 /GL /D WIN32 /D _WINDOWS /D NDEBUG /D _MBCS /D _AFXDLL /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Release\APTDLLClient.pch" /Fo"x64\Release\\" /Fd"x64\Release\vc110.pdb" /Gd /TP /errorReport:prompt APTDLLClient.cpp APTDLLClientDlg.cpp
+         APTDLLClient.cpp
+         APTDLLClientDlg.cpp
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.0\bin\x86\rc.exe /D NDEBUG /D _AFXDLL /l"0x0409" /Ix64\Release\ /nologo /fo"x64\Release\APTDLLClient.res" APTDLLClient.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mrobson\Documents\TFS\APT\Server\x64\Release\APTDLLClient.exe" /INCREMENTAL:NO /NOLOGO apt.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\Users\mrobson\Documents\TFS\APT\Server\x64\Release\APTDLLClient.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE:NO /IMPLIB:"C:\Users\mrobson\Documents\TFS\APT\Server\x64\Release\APTDLLClient.lib" /MACHINE:X64 x64\Release\APTDLLClient.res
+         x64\Release\APTDLLClient.obj
+         x64\Release\APTDLLClientDlg.obj
+         x64\Release\stdafx.obj
+         C:\Users\mrobson\Documents\TFS\APT\Server\x64\Release\APT.lib
+     1>LINK : fatal error LNK1181: cannot open input file 'apt.lib'
+     1>Done Building Project "C:\Users\mrobson\Documents\TFS\APT\Server\APT DLLs\APTDLLClient\APTDLLClient.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:11.09
