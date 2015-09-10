@@ -55,7 +55,7 @@ class rotStages:
     def move(self, chan, pos, rel=False, wait=True):#tobe implemented!!!!!
         if not wait:
             print "Not supported yet, will continue with wait."
-        self.chan[chan].move( rel=rel, pos=pos)
+        self.chan[chan].move( rel=rel, pos=self.convert2Steps(pos))
         self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
     def jog(self,chan,dir_):
@@ -65,9 +65,9 @@ class rotStages:
         self.chan[chan].stopMove()
         self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
-
     def getPos(self,chan):
         self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
+        print self.pos[chan]
 
 
 class rotControler:
@@ -229,7 +229,7 @@ class rotPlatform:
         self.enable()
         self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num )
         self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num )
-        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x04")#"\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00"
+        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x04")
         self._sendInstructionPacket(commands.MOT_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x01\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
         self._sendInstructionPacket(commands.MOT_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
         self._sendInstructionPacket(commands.MOT_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
@@ -298,6 +298,7 @@ class rotPlatform:
     def stopMove(self):
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_STOP, param1="\x01", param2="\x01", dest=self.num)
         resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_STOPPED, expectedB=20)
+        self.getDevicePos()
 
     def go_jogging(self, dir_=1):
         self._sendInstructionPacket(commands.MOT_MOVE_JOG,param1="\x01",param2="\x01" if dir_>0 else "\x02",dest=self.num)
@@ -305,11 +306,8 @@ class rotPlatform:
     def getPos(self):
         return self.pos
 
-    def setVel(self,vel):#not implemented yet
-        return False
-
-    def setAcc(self,acc):#not implemented yet
-        return False
+    def setVelParams(self,min_vel='\x00\x00\x00\x00',accel='\xA1\x50\x00\x00',max_vel='\xD0\x34\x03\x04'):#struct.pack("I",vals)
+        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00" + min_vel + accel + max_vel)
 
     def getStatus(self):
         pkt = self.rotControler.makePacket(commands.MOT_REQ_STATUSUPDATE, param1=self.bay, param2="\x00", dest=self.num)
