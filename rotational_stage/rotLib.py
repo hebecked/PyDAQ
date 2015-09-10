@@ -4,9 +4,11 @@ import numpy as np
 ###Implement in apt style with cmds, packeger, send packed, recieve package, query, convert units
 ##other file move left right like started imports low level
 
+#conversion for nice view:             print [hex(i) for i in struct.unpack("I",resp[10:14])]
+
 class rotStages:
 
-    def __init__(self,port="/dev/ttyUSB0", unit="deg", Channels=[False,False,False]):
+    def __init__(self,port="/dev/ttyUSB0", unit="deg", Channels=[False,False,False], init=["Auto","Auto","Auto"]):
         self.port=port
         self.unit=unit #can be %,rad,deg
         self.Controler=rotControler(port)
@@ -16,8 +18,8 @@ class rotStages:
         self.pos=[None,None,None]
         for i in range(3):
             if Channels[i]:
-                self.chan[i]=rotPlatform(self.Controler,i,init="Auto")
-                self.pos[i]=self.convertUnits(self.chan[i].getPos())
+                self.chan[i]=rotPlatform(self.Controler,i,init=init[i])
+                self.pos[i]=self.convert2Units(self.chan[i].getPos())
 
     def setUnit(unit="deg"):
         self.unit=unit
@@ -53,19 +55,19 @@ class rotStages:
     def move(self, chan, pos, rel=False, wait=True):#tobe implemented!!!!!
         if not wait:
             print "Not supported yet, will continue with wait."
-        self.pos[chan].move(self, rel=rel, pos=pos)
-        self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
+        self.chan[chan].move( rel=rel, pos=pos)
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
     def jog(self,chan,dir_):
         self.chan[chan].go_jogging(dir_=dir_)
 
     def stopMove(self, chan):
         self.chan[chan].stopMove()
-        self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
 
     def getPos(self,chan):
-        self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
 
 class rotControler:
@@ -162,7 +164,6 @@ class rotControler:
             msg_id, param1, param2, dest, source = struct.unpack('<HBBBB', header)
             data = None
         if msg_id != expected:
-            print 
             raise ValueError("The return packet (" + str(msg_id) + ") does not match the expected (" + str(expected) + ").")
         return {"message_id":msg_id, "param1":param1, "param2":param2, "dest":dest, "source":source, "data":data}
 
@@ -212,8 +213,8 @@ class rotPlatform:
         else:
             raise ValueError("You must choose a platform channel between [0-2].")
 
-        if not self.bayOccupied():
-           raise AttributeError("Bay " + str(platform) + "is empty.")
+        #if not self.bayOccupied():
+        #   raise AttributeError("Bay " + str(platform) + "is empty.")
 
         if not init:
             if not self.getDevicePos():
@@ -228,7 +229,7 @@ class rotPlatform:
         self.enable()
         self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num )
         self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num )
-        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00")
+        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x04")#"\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00"
         self._sendInstructionPacket(commands.MOT_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x01\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
         self._sendInstructionPacket(commands.MOT_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
         self._sendInstructionPacket(commands.MOT_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
@@ -247,6 +248,7 @@ class rotPlatform:
         pkt = self.rotControler.makePacket(commands.MOT_REQ_STATUSUPDATE, param1=self.bay, param2="\x00", dest=self.num)
         resp = self.rotControler.queryInstruction(pkt, commands.MOT_GET_STATUSUPDATE, expectedB=20)
         self.pos= struct.unpack('i', str(resp["data"][2:6]))[0]
+        return True
 
     def enabled(self):
         pkt = self.rotControler.makePacket(commands.MOD_REQ_CHANENABLESTATE, param1=self.bay, param2="\x00", dest=self.rotControler._dest)
@@ -257,7 +259,7 @@ class rotPlatform:
         self._sendInstructionPacket(commands.MOD_SET_CHANENABLESTATE,param1=self.bay,param2="\x01" if enable else "\x02",dest=self.rotControler._dest)
 
     def bayOccupied(self):
-        result=self.rotControler.queryInstruction( self.rotControler.makePacket(commands.RACK_REQ_BAYUSED,self.bay,"\x00",self.num), commands.RACK_GET_BAYUSED)
+        result=self.rotControler.queryInstruction( self.rotControler.makePacket(commands.RACK_REQ_BAYUSED,self.bay,"\x00",self.num), commands.RACK_GET_BAYUSED)#549)
         if result["param2"]=='\x02':
             return False
         elif result["param2"]=='\x01':
@@ -267,44 +269,31 @@ class rotPlatform:
 
     def goHome(self, block=True):
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
-        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED)
-        moving=True
+        resp = self.rotControler.instruction(pkt)
+        moving=block
         while moving:
-            resp = self.getStatus(self)["data"]
-            if resp[10:14]=="\x00\x00\x04\x00":
+            resp = self.getStatus()["data"]
+            res=struct.unpack("I",resp[10:14])
+            if res[0]&int('0x00000400',16):
                 moving = False
-            print resp[10:14]
         self.getDevicePos()
-        print self.pos
-        self.pos=0
 
-    def _goHome(self):
-        pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
-        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED) 
-        self.pos=0
 
-    def move(self, rel=False, pos=0):
-        pos=struct.pack('i',pos)
-        if rel:
-            #self._sendInstructionPacket(commands.MOT_SET_MOVERELPARAMS,dest=self.num ,data="\x01\x00" + pos)
-            #pkt = self.rotControler.makePacket(commands.MOT_MOVE_RELATIVE, param1="\x01", param2="\x00", dest=self.num)
-            pkt = self.rotControler.makePacket(commands.MOT_MOVE_RELATIVE, dest=self.num, data="\x01\x00" + pos)
-        else:
-            pkt = self.rotControler.makePacket(commands.MOT_MOVE_ABSOLUTE, dest=self.num, data="\x01\x00" + pos)
-        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_COMPLETED, expectedB=20)
-        self.pos= struct.unpack('i', str(resp["data"][2:6]))[0]
-
-    def move_noWait(self, rel=False, pos=0):
+    def move(self, rel=False, pos=0, block=True):
         pos=struct.pack('i',pos)
         if rel:
             pkt = self.rotControler.makePacket(commands.MOT_MOVE_RELATIVE, dest=self.num, data="\x01\x00" + pos)
         else:
             pkt = self.rotControler.makePacket(commands.MOT_MOVE_ABSOLUTE, dest=self.num, data="\x01\x00" + pos)
-        self.rotControler.instruction(pkt, commands.MOT_MOVE_COMPLETED, expectedB=20)
+        self.rotControler.instruction(pkt)#, commands.MOT_MOVE_COMPLETED, expectedB=20)
+        moving=block
+        while moving:
+            resp = self.getStatus()["data"]
+            res=struct.unpack("I",resp[10:14])
+            if not res[0]&int('0x00000020',16) and not res[0]&int('0x00000010',16):
+                moving = False
+        self.getDevicePos()
 
-    def move_getResponse(self):
-        resp = self.rotControler.recieve(commands.MOT_MOVE_COMPLETED, expectedB=20)
-        self.pos= struct.unpack('i', str(resp["data"][2:6]))[0]
 
     def stopMove(self):
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_STOP, param1="\x01", param2="\x01", dest=self.num)
