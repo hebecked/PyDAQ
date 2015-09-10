@@ -1,7 +1,73 @@
 import serial
 import struct
+import numpy as np
 ###Implement in apt style with cmds, packeger, send packed, recieve package, query, convert units
 ##other file move left right like started imports low level
+
+#conversion for nice view:             print [hex(i) for i in struct.unpack("I",resp[10:14])]
+
+class rotStages:
+
+    def __init__(self,port="/dev/ttyUSB0", unit="deg", Channels=[False,False,False], init=["Auto","Auto","Auto"]):
+        self.port=port
+        self.unit=unit #can be %,rad,deg
+        self.Controler=rotControler(port)
+        if self.Controler.getNChannels()<sum(Channels):
+            raise ValueError("Not enough channels provided/available.")
+        self.chan=[None,None,None]
+        self.pos=[None,None,None]
+        for i in range(3):
+            if Channels[i]:
+                self.chan[i]=rotPlatform(self.Controler,i,init=init[i])
+                self.pos[i]=self.convert2Units(self.chan[i].getPos())
+
+    def setUnit(unit="deg"):
+        self.unit=unit
+
+    def convert2Units(self,dev_val):
+        if self.unit=="rad":
+            return dev_val*5.4546*180/(75091*np.pi)
+        elif self.unit=="%":
+            return dev_val*5.4546*3.6/75091
+        elif self.unit=="deg":
+            return dev_val*5.4546/75091
+        elif self.unit=="dev":
+            return dev_val
+        else:
+            raise ValueError("Unknown unit.")
+
+    def convert2Steps(self,units):
+        if self.unit=="rad":
+            return int(units*75091*np.pi/(5.4546*180))
+        elif self.unit=="%":
+            return int(dev_val*75091/(5.4546*3.6))
+        elif self.unit=="deg":
+            return int(dev_val*75091/5.4546)
+        elif self.unit=="dev":
+            return int(dev_val)
+        else:
+            raise ValueError("Unknown unit.")
+
+    def goHome(self,chan):
+        self.chan[chan].goHome()
+        self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
+
+    def move(self, chan, pos, rel=False, wait=True):#tobe implemented!!!!!
+        if not wait:
+            print "Not supported yet, will continue with wait."
+        self.chan[chan].move( rel=rel, pos=pos)
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
+
+    def jog(self,chan,dir_):
+        self.chan[chan].go_jogging(dir_=dir_)
+
+    def stopMove(self, chan):
+        self.chan[chan].stopMove()
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
+
+
+    def getPos(self,chan):
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
 
 class rotControler:
@@ -68,8 +134,8 @@ class rotControler:
         packet=struct.pack("H",message_id)
         if has_data:
             data_length=len(data)
-            packet+=struckt.pack("H",data_length)
-            packet+=struckt.pack("B",0x80 | struckt.unpack("B",dest)[0])
+            packet+=struct.pack("H",data_length)
+            packet+=struct.pack("B",0x80 | struct.unpack("B",dest)[0])
         else:
             packet+=param1
             packet+=param2
@@ -98,7 +164,7 @@ class rotControler:
             msg_id, param1, param2, dest, source = struct.unpack('<HBBBB', header)
             data = None
         if msg_id != expected:
-            raise ValueError("The return packet does not match the expected.")
+            raise ValueError("The return packet (" + str(msg_id) + ") does not match the expected (" + str(expected) + ").")
         return {"message_id":msg_id, "param1":param1, "param2":param2, "dest":dest, "source":source, "data":data}
 
 
@@ -131,9 +197,9 @@ class rotControler:
         return self._n_channels
 
 
-class rotPlatform():
+class rotPlatform:
 
-    def __init__(self,rotControler, platform, init=True):
+    def __init__(self,rotControler, platform, init="Auto"):
         self.rotControler=rotControler
         if platform==0:
             self.num="\x21"
@@ -146,34 +212,43 @@ class rotPlatform():
             self.bay="\x03"
         else:
             raise ValueError("You must choose a platform channel between [0-2].")
+
+        #if not self.bayOccupied():
+        #   raise AttributeError("Bay " + str(platform) + "is empty.")
+
         if not init:
-            self.getPos()
-            return
+            if not self.getDevicePos():
+                raise ValueError("Device is not initialized.")
+        elif init=="Auto":
+            if self.getDevicePos():
+                return
 
 
-        if not self.bayOccupied():
-           raise AttributeError("Bay " + str(platform) + "is empty.")
         pkt=self.rotControler.makePacket(commands.HW_REQ_INFO, "\x00","\x00",self.num)
         info_pkt=self.rotControler.queryInstruction(pkt, commands.HW_GET_INFO, expectedB=90,)
         self.enable()
         self._sendInstructionPacket(commands.MOD_SET_DIGOUTPUTS,"\x00","\x00",self.num )
         self._sendInstructionPacket(commands.MOT_SET_TRIGGER,"\x01","\x10",self.num )
-        self._sendInstructionPacket(commands.MOD_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00")
-        self._sendInstructionPacket(commands.MOD_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x02\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
-        self._sendInstructionPacket(commands.MOD_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
-        self._sendInstructionPacket(commands.MOD_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
-        self._sendInstructionPacket(commands.MOD_SET_GENMOVEPARAMS,dest=self.num ,data="\x01\x00\x55\x25\x01\x00")
+        self._sendInstructionPacket(commands.MOT_SET_VELPARAMS,dest=self.num, data="\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x04")#"\x01\x00\x00\x00\x00\x00\xA1\x50\x00\x00\xD0\x34\x03\x00"
+        self._sendInstructionPacket(commands.MOT_SET_JOGPARAMS,dest=self.num,data="\x01\x00\x01\x00\xAA\x92\x00\x00\xE7\x14\x00\x00\x20\x10\x00\x00\x9C\x0A\x67\x02\x02\x00")
+        self._sendInstructionPacket(commands.MOT_SET_LIMSWITCHPARAMS,dest=self.num ,data="\x01\x00\x03\x00\x01\x00\xFE\x6F\x03\x00\x55\x25\x01\x00\x81\x00")
+        self._sendInstructionPacket(commands.MOT_SET_POWERPARAMS,dest=self.num ,data="\x01\x00\x0F\x00\x1E\x00")
+        self._sendInstructionPacket(commands.MOT_SET_GENMOVEPARAMS,dest=self.num ,data="\x01\x00\x55\x25\x01\x00")
         self._sendInstructionPacket(commands.MOT_SET_HOMEPARAMS,dest=self.num ,data="\x01\x00\x02\x00\x01\x00\x72\x06\x71\x01\x00\xB0\x00\x00")
         #removed rel and abs move param
-        self._sendInstructionPacket(commands.MOD_SET_BOWINDEX,dest=self.num ,data="\x01\x00\x00\x00")
-        self._sendInstructionPacket(commands.MOD_SET_PMDJOYSTICKPARAMS,dest=self.num ,data="\x01\x00\x9C\x0A\x67\x02\x38\x15\xCE\x04\x40\x20\x00\x00\x81\x40\x00\x00\x01\x00")
+        self._sendInstructionPacket(commands.MOT_SET_BOWINDEX,dest=self.num ,data="\x01\x00\x00\x00")
+        self._sendInstructionPacket(commands.MOT_SET_PMDJOYSTICKPARAMS,dest=self.num ,data="\x01\x00\x9C\x0A\x67\x02\x38\x15\xCE\x04\x40\x20\x00\x00\x81\x40\x00\x00\x01\x00")
         self.goHome()
 
     def _sendInstructionPacket(self, message_id,param1=None,param2=None,dest=None,source="\x01",data=None):
         self.rotControler.instruction( self.rotControler.makePacket(message_id,param1,param2,dest,source,data) )
 
-    def getPos(self):
-        print "do"#self.pos=x
+    def getDevicePos(self):
+        self.pos=0
+        pkt = self.rotControler.makePacket(commands.MOT_REQ_STATUSUPDATE, param1=self.bay, param2="\x00", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_GET_STATUSUPDATE, expectedB=20)
+        self.pos= struct.unpack('i', str(resp["data"][2:6]))[0]
+        return True
 
     def enabled(self):
         pkt = self.rotControler.makePacket(commands.MOD_REQ_CHANENABLESTATE, param1=self.bay, param2="\x00", dest=self.rotControler._dest)
@@ -181,364 +256,65 @@ class rotPlatform():
         return not bool(resp["param2"] - 1)
 
     def enable(self, enable=True):
-        pkt = self._sendInstructionPacket(commands.MOD_SET_CHANENABLESTATE,param1=self.bay,param2="\x01" if enable else "\x02",dest=self.rotControler._dest)
+        self._sendInstructionPacket(commands.MOD_SET_CHANENABLESTATE,param1=self.bay,param2="\x01" if enable else "\x02",dest=self.rotControler._dest)
 
     def bayOccupied(self):
-        result=self.rotControler.queryInstruction( self.rotControler.makePacket(commands.RACK_REQ_BAYUSED,self.bay,"\x00",self.num), commands.RACK_GET_BAYUSED)
+        result=self.rotControler.queryInstruction( self.rotControler.makePacket(commands.RACK_REQ_BAYUSED,self.bay,"\x00",self.num), commands.RACK_GET_BAYUSED)#549)
         if result["param2"]=='\x02':
             return False
         elif result["param2"]=='\x01':
             return True
         else:
-            raise ValueError("Unexpected return value.")
+            raise ValueError("Unexpected return value (" + str(result["param2"]) + ").")
 
-    def goHome(self):#rework
+    def goHome(self, block=True):
         pkt = self.rotControler.makePacket(commands.MOT_MOVE_HOME, param1="\x01", param2="\x00", dest=self.num)
-        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_HOMED) 
-        self.pos=0
+        resp = self.rotControler.instruction(pkt)
+        moving=block
+        while moving:
+            resp = self.getStatus()["data"]
+            res=struct.unpack("I",resp[10:14])
+            if res[0]&int('0x00000400',16):
+                moving = False
+        self.getDevicePos()
+
+
+    def move(self, rel=False, pos=0, block=True):
+        pos=struct.pack('i',pos)
+        if rel:
+            pkt = self.rotControler.makePacket(commands.MOT_MOVE_RELATIVE, dest=self.num, data="\x01\x00" + pos)
+        else:
+            pkt = self.rotControler.makePacket(commands.MOT_MOVE_ABSOLUTE, dest=self.num, data="\x01\x00" + pos)
+        self.rotControler.instruction(pkt)#, commands.MOT_MOVE_COMPLETED, expectedB=20)
+        moving=block
+        while moving:
+            resp = self.getStatus()["data"]
+            res=struct.unpack("I",resp[10:14])
+            if not res[0]&int('0x00000020',16) and not res[0]&int('0x00000010',16):
+                moving = False
+        self.getDevicePos()
 
 
     def stopMove(self):
-        #pkt = self.rotControler.makePacket(commands.MOD_REQ_CHANENABLESTATE, param1=self.bay, param2="\x00", dest=self.rotControler._dest)
-        #resp = self.rotControler.queryInstruction(pkt, commands.MOD_GET_CHANENABLESTATE)
+        pkt = self.rotControler.makePacket(commands.MOT_MOVE_STOP, param1="\x01", param2="\x01", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_MOVE_STOPPED, expectedB=20)
 
-        self.ser=serial.Serial(self.port,self.baud,rtscts=self.rtscts)
-        self.ser.write("\x65\x04" + self.bay + "\x01\x11\x01")
-        result=self.ser.read(size=6)
-        self.ser.close()
-
-    def move(self):
-
+    def go_jogging(self, dir_=1):
+        self._sendInstructionPacket(commands.MOT_MOVE_JOG,param1="\x01",param2="\x01" if dir_>0 else "\x02",dest=self.num)
 
     def getPos(self):
+        return self.pos
 
-    #change vel accel 
+    def setVel(self,vel):#not implemented yet
+        return False
 
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#
-#class ThorLabsAPT(_abstract.ThorLabsInstrument):
-#    '''
-#    Generic ThorLabs APT hardware device controller. Communicates using the 
-#    ThorLabs APT communications protocol, whose documentation is found in the
-#    thorlabs source folder.
-#    '''
-#    
-#    class APTChannel(object):
-#        '''
-#        Represents a channel within the hardware device. One device can have 
-#        many channels, each labeled by an index.
-#        '''
-#        def __init__(self, apt, idx_chan):
-#            self._apt = apt
-#            # APT is 1-based, but we want the Python representation to be
-#            # 0-based.
-#            self._idx_chan = idx_chan + 1
-#            
-#        @property
-#        def enabled(self):
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_REQ_CHANENABLESTATE,
-#                                          param1=self._idx_chan,
-#                                          param2=0x00,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            resp = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOD_GET_CHANENABLESTATE)
-#            return not bool(resp._param2 - 1)
-#        @enabled.setter
-#        def enabled(self, newval):
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_SET_CHANENABLESTATE,
-#                                          param1=self._idx_chan,
-#                                          param2=0x01 if newval else 0x02,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            self._apt.sendpacket(pkt)
-#    
-#    _channel_type = APTChannel
-#    
-#    def __init__(self, filelike):
-#        super(ThorLabsAPT, self).__init__(filelike)
-#        self._dest = 0x50 # Generic USB device; make this configurable later.
-#        
-#        # Provide defaults in case an exception occurs below.
-#        self._serial_number = None
-#        self._model_number = None
-#        self._hw_type = None
-#        self._fw_version = None
-#        self._notes = ""
-#        self._hw_version = None
-#        self._mod_state = None
-#        self._n_channels = 0
-#        self._channel = ()
-#        
-#        # Perform a HW_REQ_INFO to figure out the model number, serial number,
-#        # etc.
-#        try:
-#            req_packet = _packets.ThorLabsPacket(
-#                message_id=_cmds.ThorLabsCommands.HW_REQ_INFO,
-#                param1=0x00,
-#                param2=0x00,
-#                dest=self._dest,
-#                source=0x01,
-#                data=None
-#                )
-#            hw_info = self.querypacket(req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO)
-#            
-#            self._serial_number = str(hw_info._data[0:4]).encode('hex')
-#            self._model_number  = str(hw_info._data[4:12]).replace('\x00', '').strip()
-#            
-#            hw_type_int = struct.unpack('<H', str(hw_info._data[12:14]))[0]
-#            if hw_type_int == 45:
-#                self._hw_type = 'Multi-channel controller motherboard'
-#            elif hw_type_int == 44:
-#                self._hw_type = 'Brushless DC controller'
-#            else:
-#                self._hw_type = 'Unknown type: {}'.format(hw_type_int)
-#            
-#            # Note that the fourth byte is padding, so we strip out the first
-#            # three bytes and format them.
-#            self._fw_version    = "{0[0]}.{0[1]}.{0[2]}".format(
-#                str(hw_info._data[14:18]).encode('hex')
-#            )
-#            self._notes         = str(hw_info._data[18:66]).replace('\x00', '').strip()
-#            
-#            self._hw_version    = struct.unpack('<H', str(hw_info._data[78:80]))[0]
-#            self._mod_state     = struct.unpack('<H', str(hw_info._data[80:82]))[0]
-#            self._n_channels    = struct.unpack('<H', str(hw_info._data[82:84]))[0]
-#        except Exception as e:
-#            logger.error("Exception occured while fetching hardware info: {}".format(e))
-#
-#        # Create a tuple of channels of length _n_channel_type
-#        if self._n_channels > 0:
-#            self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
-#    
-#    @property
-#    def serial_number(self):
-#        return self._serial_number
-#    
-#    @property
-#    def model_number(self):
-#        return self._model_number
-#        
-#    @property
-#    def name(self):
-#        return "ThorLabs APT Instrument model {model}, serial {serial} (HW version {hw_ver}, FW version {fw_ver})".format(
-#            hw_ver=self._hw_version, serial=self.serial_number, 
-#            fw_ver=self._fw_version, model=self.model_number
-#        )
-#                
-#    @property
-#    def channel(self):
-#        return self._channel
-#        
-#    @property
-#    def n_channels(self):
-#        return self._n_channels
-#        
-#    @n_channels.setter
-#    def n_channels(self, nch):
-#        # Change the number of channels so as not to modify those instances already existing:
-#        # If we add more channels, append them to the list,
-#        # If we remove channels, remove them from the end of the list.
-#        if nch > self._n_channels:
-#            self._channel = self._channel + \
-#                list( self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels, nch) )
-#        elif nch < self._n_channels:
-#            self._channel = self._channel[:nch]
-#        self._n_channels = nch
-#    
-#    def identify(self):
-#        '''
-#        Causes a light on the APT instrument to blink, so that it can be
-#        identified.
-#        '''
-#        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_IDENTIFY,
-#                                      param1=0x00,
-#                                      param2=0x00,
-#                                      dest=self._dest,
-#                                      source=0x01,
-#                                      data=None)
-#        self.sendpacket(pkt)
-#
-#class APTMotorController(ThorLabsAPT):
-#
-#    class MotorChannel(ThorLabsAPT.APTChannel):
-#    
-#        ## INSTANCE VARIABLES ##
-#        
-#        #: Sets the scale between the encoder counts and physical units
-#        #: for the position, velocity and acceleration parameters of this
-#        #: channel. By default, set to dimensionless, indicating that the proper
-#        #: scale is not known.
-#        #:
-#        #: In keeping with the APT protocol documentation, the scale factor
-#        #: is multiplied by the physical quantity to get the encoder count,
-#        #: such that scale factors should have units similar to microsteps/mm,
-#        #: in the example of a linear motor.
-#        #:
-#        #: Encoder counts are represented by the quantities package unit
-#        #: "ct", which is considered dimensionally equivalent to dimensionless.
-#        #: Finally, note that the "/s" and "/s**2" are not included in scale
-#        #: factors, so as to produce quantities of dimension "ct/s" and "ct/s**2"
-#        #: from dimensionful input.
-#        #: 
-#        #: For more details, see the APT protocol documentation.
-#        scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
-#        
-#        __SCALE_FACTORS_BY_MODEL = {
-#            re.compile('TST001|BSC00.|BSC10.|MST601'): {
-#                # Note that for these drivers, the scale factors are identical
-#                # for position, velcoity and acceleration. This is not true for
-#                # all drivers!
-#                'DRV001': (pq.Quantity(51200, 'ct/mm'),) * 3,
-#                'DRV013': (pq.Quantity(25600, 'ct/mm'),) * 3,
-#                'DRV014': (pq.Quantity(25600, 'ct/mm'),) * 3,
-#                'DRV113': (pq.Quantity(20480, 'ct/mm'),) * 3,
-#                'DRV114': (pq.Quantity(20480, 'ct/mm'),) * 3,
-#                'FW103':  (pq.Quantity(25600/360, 'ct/deg'),) * 3,
-#                'NR360':  (pq.Quantity(25600/5.4546, 'ct/deg'),) * 3
-#            },
-#            # TODO: add other tables here.
-#        }
-#        
-#        __STATUS_BIT_MASK = {
-#            'CW_HARD_LIM':          0x00000001,
-#            'CCW_HARD_LIM':         0x00000002,
-#            'CW_SOFT_LIM':          0x00000004,
-#            'CCW_SOFT_LIM':         0x00000008,
-#            'CW_MOVE_IN_MOTION':    0x00000010,
-#            'CCW_MOVE_IN_MOTION':   0x00000020,
-#            'CW_JOG_IN_MOTION':     0x00000040,
-#            'CCW_JOG_IN_MOTION':    0x00000080,
-#            'MOTOR_CONNECTED':      0x00000100,
-#            'HOMING_IN_MOTION':     0x00000200,
-#            'HOMING_COMPLETE':      0x00000400,
-#            'INTERLOCK_STATE':      0x00001000
-#        }
-#    
-#        ## UNIT CONVERSION METHODS ##
-#        
-#        def set_scale(self, motor_model):
-#            """
-#            Sets the scale factors for this motor channel, based on the model
-#            of the attached motor and the specifications of the driver of which
-#            this is a channel.
-#            
-#            :param str motor_model: Name of the model of the attached motor,
-#                as indicated in the APT protocol documentation (page 14, v9).
-#            """
-#            for driver_re, motor_dict in self.__SCALE_FACTORS_BY_MODEL.iteritems():
-#                if driver_re.match(self._apt.model_number) is not None:
-#                    if motor_model in motor_dict:
-#                        self.scale_factors = motor_dict[motor_model]
-#                        return
-#                    else:
-#                        break
-#            # If we've made it down here, emit a warning that we didn't find the
-#            # model.
-#            logger.warning(
-#                "Scale factors for controller {} and motor {} are unknown".format(
-#                    self._apt.model_number, motor_model
-#                )
-#            )
-#    
-#        ## MOTOR COMMANDS ##
-#        
-#        @property
-#        def status_bits(self):
-#            # NOTE: the difference between MOT_REQ_STATUSUPDATE and MOT_REQ_DCSTATUSUPDATE confuses me
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_STATUSUPDATE,
-#                                          param1=self._idx_chan,
-#                                          param2=0x00,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            # The documentation claims there are 14 data bytes, but it seems there are sometimes
-#            # some extra random ones...
-#            resp_data = self._apt.querypacket(pkt)._data[:14]
-#            ch_ident, position, enc_count, status_bits = struct.unpack('<HLLL', resp_data)
-#            
-#            status_dict = dict(
-#                (key, (status_bits & bit_mask > 0))
-#                for key, bit_mask in self.__STATUS_BIT_MASK.iteritems()
-#            )
-#            
-#            return status_dict
-#        
-#        @property
-#        def position(self):
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
-#                                          param1=self._idx_chan,
-#                                          param2=0x00,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
-#            chan, pos = struct.unpack('<Hl', response._data)
-#            return pq.Quantity(pos, 'counts') / self.scale_factors[0]
-#            
-#        @property
-#        def position_encoder(self):
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_ENCCOUNTER,
-#                                          param1=self._idx_chan,
-#                                          param2=0x00,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER)
-#            chan, pos = struct.unpack('<Hl', response._data)
-#            return pq.Quantity(pos, 'counts')
-#        
-#        def go_home(self):
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_HOME,
-#                                          param1=self._idx_chan,
-#                                          param2=0x00,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=None)
-#            self._apt.sendpacket(pkt)
-#            
-#        def move(self, pos, absolute=True):
-#            # Handle units as follows:
-#            # 1. Treat raw numbers as encoder counts.
-#            # 2. If units are provided (as a Quantity), check if they're encoder
-#            #    counts. If they aren't, apply scale factor.
-#            if not isinstance(pos, pq.Quantity):
-#                pos_ec = int(pos)
-#            else:
-#                if pos.units == pq.counts:
-#                    pos_ec = int(pos.magnitude)
-#                else:
-#                    scaled_pos = (pos * self.scale_factors[0])
-#                    # Force a unit error.
-#                    try:
-#                        pos_ec = int(scaled_pos.rescale(pq.counts).magnitude)
-#                    except:
-#                        raise ValueError("Provided units are not compatible with current motor scale factor.")
-#            
-#            # Now that we have our position as an integer number of encoder
-#            # counts, we're good to move.
-#            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
-#                                          param1=None,
-#                                          param2=None,
-#                                          dest=self._apt._dest,
-#                                          source=0x01,
-#                                          data=struct.pack('<Hl', self._idx_chan, pos_ec))
-#                                          
-#            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED)
-#            
-#    _channel_type = MotorChannel
-#
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
+    def setAcc(self,acc):#not implemented yet
+        return False
 
-
+    def getStatus(self):
+        pkt = self.rotControler.makePacket(commands.MOT_REQ_STATUSUPDATE, param1=self.bay, param2="\x00", dest=self.num)
+        resp = self.rotControler.queryInstruction(pkt, commands.MOT_GET_STATUSUPDATE, expectedB=20)
+        return resp
 
 
 from flufl.enum import IntEnum
@@ -611,6 +387,9 @@ class commands(IntEnum):
     MOT_MOVE_VELOCITY       = 0x0457
     MOT_MOVE_STOP           = 0x0465
     MOT_MOVE_STOPPED        = 0x0466
+    MOT_SET_BOWINDEX        = 0x04F4
+    MOT_REQ_BOWINDEX        = 0x04F5
+    MOT_GET_BOWINDEX        = 0x04F6
     MOT_SET_DCPIDPARAMS     = 0x04A0
     MOT_REQ_DCPIDPARAMS     = 0x04A1
     MOT_GET_DCPIDPARAMS     = 0x04A2
