@@ -125,7 +125,7 @@ class instructions(object):
 						self.sLockIn=True
 					if inst[10] != "idl":
 						self.XYZ_Scanner=True
-					if float(inst[14]) != 0:
+					if float(inst[14]) != 0:#This needs to change in future file versions
 						self.rotPlatform[0]=True
 					if float(inst[15]) != 0:
 						self.rotPlatform[1]=True
@@ -141,6 +141,9 @@ class instructions(object):
 						else:
 							TODO_dict.update({task[i]:int(inst[i])})
 					self.instructions.append(TODO_dict)
+				elif version==2:
+					print 'Not implemented yet'
+					'''This part will be based on changes per iteration only (json?)'''
 				else:
 					raise IOError("Instruction file has no (known) version.\nExiting!!!")
 

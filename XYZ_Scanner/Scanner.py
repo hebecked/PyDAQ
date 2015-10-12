@@ -66,7 +66,7 @@ class Scanner( object ):
     # =  GENERAL INPUT OUTPUT   = # 
     # =========================== #
     def __init__(self,port="/dev/tty.usbserial-FTYK04LVD",
-                 do_refrun=False,smooth_move=True,
+                 do_refrun=False,smooth_move=False,
                  debug=True,show=True):
         """
         do_refrun:   [bool] starts by moving the scanner to the [0,0,0] position

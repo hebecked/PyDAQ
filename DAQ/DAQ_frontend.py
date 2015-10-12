@@ -5,6 +5,7 @@ import DAQ
 from monochromator import CornerStone260
 import Scanner
 import lockin
+from rotational_stage import rotLib #rotStages
 
 class DAQ_handler(object):
 	"""docstring for DAQ_handler"""
@@ -30,16 +31,14 @@ class DAQ_handler(object):
         	self.devices['rLockIn']=lockIn(port=ports['rLockIn'])
 
         if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
-        	#init here
-        	#self.devices['rotPlatform']=
-
+        	self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"])
 
 		self.DAQ = DAQ(self.instructions, self.devices, pipeend2)
 		if run:
 			self.run()
 		
 
-	def run():
+	def run(self):
 		self.DAQ.start()
 
 
@@ -75,6 +74,7 @@ class DAQ_handler(object):
 		if urgent:
 			self.DAQ.send("kill")
 			self.devices['xyz-scanner'].close(quick=True)
+			#others
 		else:
 			self.__del__()
 
