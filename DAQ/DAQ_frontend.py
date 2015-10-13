@@ -25,10 +25,10 @@ class DAQ_handler(object):
             self.devices['xyz-scanner']=Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False)
 
         if self.instructions.sLockIn:
-        	self.devices['sLockIn']=lockIn(port=ports['sLockIn'])
+        	self.devices['sLockIn']=lockIn(port=ports['sLockIn'], autogain=True, timeconstant=0.3)
 
         if self.instructions.rLockIn:
-        	self.devices['rLockIn']=lockIn(port=ports['rLockIn'])
+        	self.devices['rLockIn']=lockIn(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
 
         if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
         	self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"])
@@ -43,10 +43,10 @@ class DAQ_handler(object):
 
 
 	def convert_dict_to_line(self,dict_, separator='\t'):#add if "key" in dict.keys() for each
-		keys=['#','Wavelength','rLockIn','rLockInErr','sLockIn','sLockInErr','rLockInFreq','rLockInPhase','sLockInFreq','sLockInPhase','Misc']
+		keys=['#','Wavelength','rLockIn','rLockInErr','sLockIn','sLockInErr','rLockInFreq','rLockInFreqErr','rLockInPhase','rLockInPhaseErr','sLockInFreq','sLockInFreqErr','sLockInPhase','sLockInPhaseErr','Misc']
 		line=''
 		for key in keys:
-			if key in dict_keys():
+			if key in dict_.keys():
 				line+=str(dict_[key]) + separator
 			else:
 				line+=str("-1") + separator

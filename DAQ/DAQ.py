@@ -77,31 +77,44 @@ class DAQ(multiprocessing.Process):
             else:
                 results.update({"Wavelength":-1})
             if inst["delay"]>0:
-                time.sleep(imst["delay"])
+                time.sleep(inst["delay"])
+            amplr=[]
+            ampls=[]
+            phaser=[]
+            phases=[]
+            freqr=[]
+            freqs=[]
+            for i in range(inst['avrgn']):
+                if self.instructions.sLockIn and inst["readLockins"]:
+                    sampl,sphase,sfreq = self.devices['sLockIn'].StandardData(N=1)
+                    ampls.append(sampl)
+                    phases.append(sphase)
+                    freqs.append(sfreq)
 
-            if self.instructions.sLockIn:
-                self.devices['sLockIn']
+                if self.instructions.rLockIn and inst["readLockinr"]:
+                    rampl,rphase,rfreq = self.devices['rLockIn'].StandardData(N=1)
+                    amplr.append(rampl)
+                    phaser.append(rphase)
+                    freqr.append(rfreq)
 
-            if self.instructions.rLockIn:
+            if self.instructions.sLockIn and inst["readLockins"]:
+                results.update({'sLockIn':np.mean(ampls)})
+                results.update({'sLockInErr':np.std(ampls)})
+                results.update({'sLockInFreq':np.mean(phases)})
+                results.update({'sLockInFreqErr':np.std(phases)})
+                results.update({'sLockInPhase':np.mean(freqs)})
+                results.update({'sLockInPhaseErr':np.std(freqs)})
 
+            if self.instructions.rLockIn and inst["readLockinr"]:
+                results.update({'rLockIn':np.mean(amplr)})
+                results.update({'rLockInErr':np.std(amplr)})
+                results.update({'rLockInFreq':np.mean(phaser)})
+                results.update({'rLockInFreqErr':np.std(phaser)})
+                results.update({'rLockInPhase':np.mean(freqr)})
+                results.update({'rLockInPhaseErr':np.std(freqr)})
 
+            results.update({'Misc':None})
 
-needs to pipe:
-        dict_['#']
-        dict_['Wavelength']
-        dict_['rLockIn']
-        dict_['rLockInErr']
-        dict_['sLockIn']
-        dict_['sLockInErr']
-        dict_['rLockInFreq']
-        dict_['rLockInPhase']
-        dict_['sLockInFreq']
-        dict_['sLockInPhase']
-        dict_['Misc']
-
-
-
-            #make dict
             self.pipe.send(results)
         return	
 

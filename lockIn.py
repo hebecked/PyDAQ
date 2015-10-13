@@ -70,28 +70,44 @@ class lockin:
 				print 'waiting for device ' + self.port + ' to be available'
 				time.sleep(3)
 		self.ser.flushInput()  
-		ampl=[]
-		phase=[]
-		freq=[]
 		if self.autogain and not self.AutoGain():
 			return -1,0,-1,0,-1,0
-		for i in range(0,N):  
+		if N>1:
+			ampl=[]
+			phase=[]
+			freq=[]
+			for i in range(0,N):  
+				time.sleep(self.timeconstant)
+				self.ser.flushInput()    
+				self.ser.write('OUTP?3' + self.sendtermchar)
+				help=float(self._read_LI())
+				ampl.append(help)
+				time.sleep(0.01)
+				self.ser.flushInput()
+				self.ser.write('OUTP?4' + self.sendtermchar)
+				phase.append(float(self._read_LI()))
+				time.sleep(0.01)
+				self.ser.flushInput()
+				self.ser.write('FREQ?' + self.sendtermchar)
+				freq.append(float(self._read_LI()))
+			self.ser.close()
+			return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
+		else:
+			time.sleep(self.timeconstant)
 			self.ser.flushInput()    
 			self.ser.write('OUTP?3' + self.sendtermchar)
-			help=float(self._read_LI())
-			ampl.append(help)
-			#print help
-			time.sleep(1)
+			ampl=float(self._read_LI())
+			time.sleep(0.01)
 			self.ser.flushInput()
 			self.ser.write('OUTP?4' + self.sendtermchar)
-			phase.append(float(self._read_LI()))
-			time.sleep(1)
+			phase=float(self._read_LI())
+			time.sleep(0.01)
 			self.ser.flushInput()
 			self.ser.write('FREQ?' + self.sendtermchar)
-			freq.append(float(self._read_LI()))
-			time.sleep(self.timeconstant)
+			freq=float(self._read_LI())
 		self.ser.close()
-		return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
+		return ampl,phase,freq
+
 
 
  	def AutoGain(self):
@@ -154,3 +170,15 @@ class lockin:
 		index=np.argmin(np.abs(np.asarray(list_)-set_timeconstant))
 		self.timeconstant=list_[index]
 		self.SerialCommand('OFLT' + str(index))
+
+
+
+
+if __name__=='__main__':
+
+    parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
+    ##move to sub processes:
+	parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
+	parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
+    
+    arguments=parser.done()
