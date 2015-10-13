@@ -116,6 +116,7 @@ class DAQ(multiprocessing.Process):
             results.update({'Misc':None})
 
             self.pipe.send(results)
+        self.pipe.send('DONE')
         return	
 
 

@@ -15,7 +15,7 @@ class DAQ_handler(object):
 		self.instructions=instructions(instructionfile)
 		self.datastorage=[]
 		self.resultfile=files(resultfile)
-		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefPhase SigFreq SigPhase Misc")
+		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc")
 		 #init devices if aplicable allow access to device in main programm if possible
 		self.devices={}
         if self.instructions.monochromator:
@@ -57,8 +57,12 @@ class DAQ_handler(object):
 			with self.resultfile as resfile:
 				while self.pipe.poll():
 					result=self.pipe.get()
-					resfile.append_line(convert_dict_to_line(result))
-					self.datastorage.append(result)
+					if result == 'DONE':
+						return 'DONE'
+					else:
+						resfile.append_line(convert_dict_to_line(result))
+						self.datastorage.append(result)
+						return 'Running'
 
 	def send_signal(signal):
 		if signal=="stop" or signal=="pause" or signal=="continue":
@@ -74,7 +78,9 @@ class DAQ_handler(object):
 		if urgent:
 			self.DAQ.send("kill")
 			self.devices['xyz-scanner'].close(quick=True)
-			#others
+			#lockin not needed
+			#monochromator not needed
+			#Rotplatform not needed
 		else:
 			self.__del__()
 

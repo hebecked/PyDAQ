@@ -35,31 +35,20 @@ if arguments["SCONFIG"]['status']=='set':
 
 if arguments["GUI"]['val']:
 	gui=GUI(parser)
+	exit()
 
+#simple for the beginning, do error handling LATER
+ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceMLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
+daq=DAQ.DAQ_frontend.DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val']):
 
-DAQ_handler(self, instructionfile, ports, resultfile):
+while daq.update()=='Running':
+	time.sleep(1)
 
+	
 
 '''
-Variables:
-store config
+TODO:
 
-config file
-measurement file
-output files
-Gui?
-manual positioning of (xyz rot1, rot2, wvl)
-manual read lockin
 safety zone (1 dimension for now)
-
 add option to show plots on comandline
-
-move lower options to
-
-Ad to monochrom file if opened alone
-monochromator:
-optical port (1,2)
-shutter (open, closed)
-grating (nr)
-filter (nr)
 '''
