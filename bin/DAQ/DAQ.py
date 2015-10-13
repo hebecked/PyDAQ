@@ -1,10 +1,10 @@
 import multiprocessing
 from multiprocessing import Pipe, Process
-from Data_io import instructions
-from monochromator import CornerStone260
-import Scanner
-import lockin
-from rotational_stage import rotLib #rotStages
+from ..Data_IO import instructions
+from ..monochromator import CornerStone260
+from ..XYZ_Scanner import Scanner
+from .. import lockIn
+from ..rotational_stage import rotLib #rotStages
 
 class DAQ(multiprocessing.Process):
 
@@ -40,11 +40,11 @@ class DAQ(multiprocessing.Process):
                     devices['monochromator'].Filter(inst["filter"])
             if instructions.XYZ_Scanner:
                 if inst['vx']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vx'],1):
+                    devices['xyz-scanner'].change_1axisVelocity(inst['vx'],1)
                 if inst['vy']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vy'],2):
+                    devices['xyz-scanner'].change_1axisVelocity(inst['vy'],2)
                 if inst['vz']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vz'],3):
+                    devices['xyz-scanner'].change_1axisVelocity(inst['vz'],3)
                 if inst["xyz_pos_type"]=='abs':
                     x,y,z=devices['xyz-scanner'].read_position(self)
                     if inst["xpos"]>=0:
@@ -53,9 +53,9 @@ class DAQ(multiprocessing.Process):
                         y=inst["ypos"]
                     if inst["zpos"]>=0:
                         z=inst["zpos"]
-                    devices['xyz-scanner'].move_to(x,y,z, unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True):
+                    devices['xyz-scanner'].move_to(x,y,z, unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
                 elif inst["xyz_pos_type"]=='rel':
-                    devices['xyz-scanner'].shift_to(inst["xpos"],inst["ypos"],inst["zpos"], unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True):
+                    devices['xyz-scanner'].shift_to(inst["xpos"],inst["ypos"],inst["zpos"], unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
                 elif inst["xyz_pos_type"]=='idl':
                     pass
                 else:
@@ -122,6 +122,7 @@ class DAQ(multiprocessing.Process):
 
 
     def __del__(self):
+        pass
         #close all devices
 
 

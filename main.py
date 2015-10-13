@@ -1,9 +1,9 @@
 #!/usr/bin/python2.7
 
 import os, sys
-from parser_wrapper import parsers
-import GUI
-import DAQ
+from bin.parser_wrapper import parsers
+#import GUI
+from bin.DAQ.DAQ_frontend import DAQ_handler
 import multiprocessing
 
 """
@@ -30,16 +30,18 @@ if arguments["InstructionFileHelp"]['val']:
 	print "TODO: help"
 	exit()
 
-if arguments["SCONFIG"]['status']=='set':
-	parser.storeConfig()
+#if arguments["SCONFIG"]['status']=='set':
+#if not parser.args.CONFIG==None:
+#	parser.storeConfig()
 
 if arguments["GUI"]['val']:
-	gui=GUI(parser)
-	exit()
+#	gui=GUI(parser)
+	pass
+	#exit()
 
 #simple for the beginning, do error handling LATER
 ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceMLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
-daq=DAQ.DAQ_frontend.DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val']):
+daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val'])
 
 while daq.update()=='Running':
 	time.sleep(1)

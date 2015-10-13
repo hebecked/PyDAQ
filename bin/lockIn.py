@@ -175,10 +175,9 @@ class lockin:
 
 
 if __name__=='__main__':
-
-    parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
-    ##move to sub processes:
+	parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
+   	##move to sub processes:
 	parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 	parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
-    
-    arguments=parser.done()
+
+   	arguments=parser.done()

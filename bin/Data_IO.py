@@ -1,7 +1,7 @@
 #class dataIO:
+import os, sys
 
 class files(object):
-	import os, sys
 
 	def __init__(self,filename):
 		baspath=os.path.dirname(os.path.abspath(__file__))
@@ -80,7 +80,7 @@ class serialports:
 class instructions(object):
 
 	def __init__(self, instrctionfile):
-		super.__init__(self)
+		#super.__init__(self)
 		self.instructions=[]
 		version=1
 		self.monochromator=False
@@ -94,7 +94,7 @@ class instructions(object):
 					temp=[[False,str.replace(inst,"v=","")][inst.find("v=")==0] for inst in line.split()]
 					for i in temp:
 						version=i if i else version
-				elif version==1:
+				elif version=="1":
 					'''
 					0)measurement/step# 
 					1)wavelength 
@@ -134,7 +134,7 @@ class instructions(object):
 					TODO_dict={}
 					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
 					for i in range(len(task)):
-						if i==4 or i==5:
+						if i==5 or i==6:
 							TODO_dict.update({task[i]:bool(inst[i])})
 						elif i==10 or i==17:
 							TODO_dict.update({task[i]:str(inst[i])})

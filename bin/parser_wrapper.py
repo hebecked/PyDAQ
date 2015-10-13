@@ -31,9 +31,9 @@ class parsers:
 			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help, nargs=multiargsn)
 		elif datatype==bool:
 			if default==True:
-				self.parser.add_argument(flag, '--' + name, dest=name, action='store_false', type=bool, default=True, help=help)
+				self.parser.add_argument(flag, '--' + name, dest=name, action='store_false', default=True, help=help) #type=bool removed
 			else:
-				self.parser.add_argument(flag, '--' + name, dest=name, action='store_true', type=bool, default=False, help=help)
+				self.parser.add_argument(flag, '--' + name, dest=name, action='store_true', default=False, help=help) #type=bool removed
 		else:
 			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help)
 		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs}
@@ -49,7 +49,7 @@ class parsers:
 		self.config = ConfigParser.ConfigParser()
 		if not self.args.CONFIG==None:
 			self.config.read(self.args.CONFIG)
-			config_args=_as_dict(self.config)
+			config_args=self._as_dict(self.config)
 		else:
 			config_args={}
 		cmd_args=vars(self.args)
@@ -78,7 +78,7 @@ class parsers:
 		return self.elements
 
 
-	def _as_dict(config):
+	def _as_dict(self,config):
 		"""
 		Converts a ConfigParser object into a dictionary.
 		The resulting dictionary has sections as keys which point to a dict of the

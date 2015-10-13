@@ -1,11 +1,11 @@
 import multiprocessing
 from multiprocessing import Pipe, Process
-from Data_IO import instructions, files
+from ..Data_IO import instructions, files
 import DAQ
-from monochromator import CornerStone260
-import Scanner
-import lockin
-from rotational_stage import rotLib #rotStages
+from ..monochromator import CornerStone260
+from ..XYZ_Scanner import Scanner
+from .. import lockIn
+from ..rotational_stage import rotLib #rotStages
 
 class DAQ_handler(object):
 	"""docstring for DAQ_handler"""
@@ -18,20 +18,20 @@ class DAQ_handler(object):
 		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc")
 		 #init devices if aplicable allow access to device in main programm if possible
 		self.devices={}
-        if self.instructions.monochromator:
-            self.devices['monochromator']=CornerStone260(port = ports['monochromator'])
-            self.devices['monochromator'].Units_NM()
-        if self.instructions.XYZ_Scanner:
-            self.devices['xyz-scanner']=Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False)
+		if self.instructions.monochromator:
+			self.devices['monochromator']=CornerStone260(port = ports['monochromator'])
+			self.devices['monochromator'].Units_NM()
+		if self.instructions.XYZ_Scanner:
+			self.devices['xyz-scanner']=Scanner.Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False)
 
-        if self.instructions.sLockIn:
-        	self.devices['sLockIn']=lockIn(port=ports['sLockIn'], autogain=True, timeconstant=0.3)
+		if self.instructions.sLockIn:
+			self.devices['sLockIn']=lockIn(port=ports['sLockIn'], autogain=True, timeconstant=0.3)
 
-        if self.instructions.rLockIn:
-        	self.devices['rLockIn']=lockIn(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
+		if self.instructions.rLockIn:
+			self.devices['rLockIn']=lockIn(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
 
-        if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
-        	self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"])
+		if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
+			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"])
 
 		self.DAQ = DAQ(self.instructions, self.devices, pipeend2)
 		if run:
