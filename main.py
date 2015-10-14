@@ -1,9 +1,9 @@
 #!/usr/bin/python2.7
 
 import os, sys
-from parser_wrapper import parsers
-import GUI
-import DAQ
+from bin.parser_wrapper import parsers
+#import GUI
+from bin.DAQ.DAQ_frontend import DAQ_handler
 import multiprocessing
 
 """
@@ -21,17 +21,7 @@ parser.add_argument( "XYZ_ScannerPort", "-sp", str, group="XYZ_Scanner", default
 parser.add_argument( "MonochromatorPort", "-mp", str, group="Monochromator", default=None, help='Sets the com port for the Monochromator.', required=True)
 parser.add_argument( "RotationalPlatformPort", "-rp", str, group="RotationalPlatform", default=None, help='Sets the port for the RotationalPlatform.', required=True)
 parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner", default=[0,100], help='Please supply a safety range along the x-axis for your experiment in units of percent.', multiargs=True, multiargsn=2, required=True)
-###print "The following commands are only used for manual control of the devices. If aa instruction is supplied as well the will be run before the files instructions."
 
-##move to sub processes:
-parser.add_argument( "angle1", "-a1", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 1 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
-parser.add_argument( "angle2", "-a2", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 2 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
-parser.add_argument( "angle3", "-a3", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 to the absolute position in degrees. For positive values it will go right and for negative values left. Will be run before -i.')
-parser.add_argument( "angle1r", "-a1r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 1 relative to the current position in units of degree. Will be run before -i.')
-parser.add_argument( "angle2r", "-a2r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 2 relative to the current position in units of degree. Will be run before -i.')
-parser.add_argument( "angle3r", "-a3r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 relative to the current position in units of degree. Will be run before -i.')
-parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
-parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
 #TODo add flags for showing plots in command line mode
 
 arguments=parser.done()
@@ -40,33 +30,27 @@ if arguments["InstructionFileHelp"]['val']:
 	print "TODO: help"
 	exit()
 
-if arguments["SCONFIG"]['status']=='set':
-	parser.storeConfig()
+#if arguments["SCONFIG"]['status']=='set':
+#if not parser.args.CONFIG==None:
+#	parser.storeConfig()
 
 if arguments["GUI"]['val']:
-	gui=GUI(parser)
+#	gui=GUI(parser)
+	pass
+	#exit()
 
+#simple for the beginning, do error handling LATER
+ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceMLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
+daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val'])
+
+while daq.update()=='Running':
+	time.sleep(1)
+
+	
 
 '''
-Variables:
-store config
+TODO:
 
-config file
-measurement file
-output files
-Gui?
-manual positioning of (xyz rot1, rot2, wvl)
-manual read lockin
 safety zone (1 dimension for now)
-
 add option to show plots on comandline
-
-move lower options to
-
-Ad to monochrom file if opened alone
-monochromator:
-optical port (1,2)
-shutter (open, closed)
-grating (nr)
-filter (nr)
 '''
