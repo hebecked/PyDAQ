@@ -31,7 +31,7 @@ class DAQ_handler(object):
 			self.devices['rLockIn']=lockIn(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
 
 		if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
-			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"])
+			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"]) #switch to init true
 
 		self.DAQ = DAQ(self.instructions, self.devices, pipeend2)
 		if run:

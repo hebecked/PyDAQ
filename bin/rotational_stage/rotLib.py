@@ -42,17 +42,17 @@ class rotStages:
         if self.unit=="rad":
             return int(units*75091*np.pi/(5.4546*180))
         elif self.unit=="%":
-            return int(dev_val*75091/(5.4546*3.6))
+            return int(units*75091/(5.4546*3.6))
         elif self.unit=="deg":
-            return int(dev_val*75091/5.4546)
+            return int(units*75091/5.4546)
         elif self.unit=="dev":
-            return int(dev_val)
+            return int(units)
         else:
             raise ValueError("Unknown unit.")
 
     def goHome(self,chan):
         self.chan[chan].goHome()
-        self.pos[chan]=self.convertUnits(self.chan[chan].getPos())
+        self.pos[chan]=self.convert2Units(self.chan[chan].getPos())
 
     def move(self, chan, pos, rel=False, wait=True):#tobe implemented!!!!!
         if not wait:
