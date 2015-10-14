@@ -14,9 +14,9 @@ class lockin:
 		self.bytesize=8
 		self.sendtermchar='\n'
 		if timeconstant==-1:
-			self.timeconstant=self.get_timeconstant()
+			self.get_timeconstant()
 		else:
-			self.timeconstant=self.set_timeconstant(timeconstant)
+			self.set_timeconstant(timeconstant)
 		
 	def SerialCommand(self,command):
 		#setup - if a Serial object can't be created, a SerialException will be raised.
@@ -76,7 +76,8 @@ class lockin:
 			ampl=[]
 			phase=[]
 			freq=[]
-			for i in range(0,N):  
+			for i in range(0,N):
+				print self.timeconstant
 				time.sleep(self.timeconstant)
 				self.ser.flushInput()    
 				self.ser.write('OUTP?3' + self.sendtermchar)
@@ -152,12 +153,12 @@ class lockin:
 
 	def get_timeconstant(self):
 		index=int(self.SerialQuery('OFLT?'))
-		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1,3,10,30,100,300,1e+3,3e+3,1e+4,3e+4]
+		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1.,3.,10.,30.,100.,300.,1e+3,3e+3,1e+4,3e+4]
 		self.timeconstant=list_[index]
 		return list_[index]
 
 	def set_timeconstant(self,timeconst):
-		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1,3,10,30,100,300,1e+3,3e+3,1e+4,3e+4]
+		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1.,3.,10.,30.,100.,300.,1e+3,3e+3,1e+4,3e+4]
 		index=np.argmin(np.abs(np.asarray(list_)-timeconst))
 		self.timeconstant=list_[index]
 		self.SerialCommand('OFLT' + str(index))
@@ -166,7 +167,7 @@ class lockin:
 	def autoset_timeconstant(self,periodes=100.):
 		frequency=self.get_frequency()
 		set_timeconstant=float(periodes)/float(frequency)
-		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1,3,10,30,100,300,1e+3,3e+3,1e+4,3e+4]
+		list_=[1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2,3e-2,1e-1,3e-1,1.,3.,10.,30.,100.,300.,1e+3,3e+3,1e+4,3e+4]
 		index=np.argmin(np.abs(np.asarray(list_)-set_timeconstant))
 		self.timeconstant=list_[index]
 		self.SerialCommand('OFLT' + str(index))

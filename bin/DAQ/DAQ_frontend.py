@@ -15,25 +15,25 @@ class DAQ_handler(object):
 		self.instructions=instructions(instructionfile)
 		self.datastorage=[]
 		self.resultfile=files(resultfile)
-		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc")
+		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc\n")
 		 #init devices if aplicable allow access to device in main programm if possible
 		self.devices={}
 		if self.instructions.monochromator:
 			self.devices['monochromator']=CornerStone260(port = ports['monochromator'])
 			self.devices['monochromator'].Units_NM()
 		if self.instructions.XYZ_Scanner:
-			self.devices['xyz-scanner']=Scanner.Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False)
+			self.devices['xyz-scanner']=Scanner.Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False,show=False)
 
 		if self.instructions.sLockIn:
-			self.devices['sLockIn']=lockIn(port=ports['sLockIn'], autogain=True, timeconstant=0.3)
+			self.devices['sLockIn']=lockIn.lockin(port=ports['sLockIn'], autogain=False, timeconstant=0.3)
 
 		if self.instructions.rLockIn:
-			self.devices['rLockIn']=lockIn(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
+			self.devices['rLockIn']=lockIn.lockin(port=ports['rLockIn'], autogain=False, timeconstant=0.3)
 
 		if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
-			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=["Auto","Auto","Auto"]) #switch to init true
+			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=self.instructions.rotPlatform) #switch to init true
 
-		self.DAQ = DAQ(self.instructions, self.devices, pipeend2)
+		self.DAQ = DAQ.DAQ(self.instructions, self.devices, pipeend2)
 		if run:
 			self.run()
 		
@@ -52,19 +52,21 @@ class DAQ_handler(object):
 				line+=str("-1") + separator
 		return line
 
-	def update():
+	def update(self):
 		if self.pipe.poll():
 			with self.resultfile as resfile:
 				while self.pipe.poll():
-					result=self.pipe.get()
+					result=self.pipe.recv()
 					if result == 'DONE':
 						return 'DONE'
 					else:
-						resfile.append_line(convert_dict_to_line(result))
+						resfile.append_line(self.convert_dict_to_line(result))
 						self.datastorage.append(result)
 						return 'Running'
+		#include is running test here
+		return 'Running'
 
-	def send_signal(signal):
+	def send_signal(self,signal):
 		if signal=="stop" or signal=="pause" or signal=="continue":
 			self.pipe.send(signal)
 		elif  signal=="kill":
@@ -76,7 +78,7 @@ class DAQ_handler(object):
 
 	def close(self, urgent=True):
 		if urgent:
-			self.DAQ.send("kill")
+			self.pipe.send("kill")
 			self.devices['xyz-scanner'].close(quick=True)
 			#lockin not needed
 			#monochromator not needed
@@ -85,7 +87,7 @@ class DAQ_handler(object):
 			self.__del__()
 
 	def __del__(self):
-		self.DAQ.send("stop")
+		self.pipe.send("stop")
 		self.devices['xyz-scanner'].close()
 		del self.devices['monochromator']
 		del self.devices['xyz-scanner']

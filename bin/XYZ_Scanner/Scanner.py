@@ -77,6 +77,7 @@ class Scanner( object ):
         self._port   = port
         self._smooth_move = smooth_move
         self._debug  = debug
+        self._verbose = debug
         self._define_basic_number_()
         
         self._connect_serial_()
@@ -405,8 +406,12 @@ class Scanner( object ):
         """
         
         x = self._read_message_("POSA1/")
+        time.sleep(0.2)
         y = self._read_message_("POSA2/")
+        time.sleep(0.2)
         z = self._read_message_("POSA3/")
+        time.sleep(0.2)
+        print x, y, z
         return int(x), int(y), int(z)
 
     
@@ -438,7 +443,7 @@ class Scanner( object ):
             add = self.ser.read()
             message += add
             i +=1
-            
+
         return message.split(self._end_message)[0]
     
     # ======================== #

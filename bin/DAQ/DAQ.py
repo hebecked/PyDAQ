@@ -5,57 +5,61 @@ from ..monochromator import CornerStone260
 from ..XYZ_Scanner import Scanner
 from .. import lockIn
 from ..rotational_stage import rotLib #rotStages
+import time
+import numpy as np
 
 class DAQ(multiprocessing.Process):
 
     def __init__(self, instructions, devices, pipe):
         multiprocessing.Process.__init__(self)
         self.pipe=pipe
-        self.instructions=instruction
+        self.instructions=instructions
         self.devices=devices
+        self.do="running"
 
 
     def run(self):
         for inst in self.instructions.instructions:
             if self.pipe.poll():
-                do=self.pipe.recv()
-            if do == "pause":
-                while do=="pause":
+                self.do=self.pipe.recv()
+            if self.do == "pause":
+                while self.do=="pause":
                         print "Relaxing :)"
-                        do=self.pipe.recv()
-            if do == "stop":
+                        self.do=self.pipe.recv()
+            if self.do == "stop":
                 print "Bye, bye."
                 exit()
-            if do == "continue":
+            if self.do == "continue":
+                    self.do="running"
                     print "Arbeit, Arbeit."
 
             '''Go through all devices and instructions.'''
             results={'#':inst["#"]}
-            if instructions.monochromator:
+            if self.instructions.monochromator:
                 if inst["wavelength"]>=0:
-                    devices['monochromator'].GoWave(inst["wavelength"])
+                    self.devices['monochromator'].GoWave(inst["wavelength"])
                 if inst["grating"]>=0:
-                    devices['monochromator'].Grat(inst["grating"])
+                    self.devices['monochromator'].Grat(inst["grating"])
                 if inst["filter"]>=0:
-                    devices['monochromator'].Filter(inst["filter"])
-            if instructions.XYZ_Scanner:
+                    self.devices['monochromator'].Filter(inst["filter"])
+            if self.instructions.XYZ_Scanner:
                 if inst['vx']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vx'],1)
+                    self.devices['xyz-scanner'].change_1axisVelocity(inst['vx'],1)
                 if inst['vy']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vy'],2)
+                    self.devices['xyz-scanner'].change_1axisVelocity(inst['vy'],2)
                 if inst['vz']>0:
-                    devices['xyz-scanner'].change_1axisVelocity(inst['vz'],3)
+                    self.devices['xyz-scanner'].change_1axisVelocity(inst['vz'],3)
                 if inst["xyz_pos_type"]=='abs':
-                    x,y,z=devices['xyz-scanner'].read_position(self)
+                    x,y,z=self.devices['xyz-scanner'].read_position()
                     if inst["xpos"]>=0:
                         x=inst["xpos"]
                     if inst["ypos"]>=0:
                         y=inst["ypos"]
                     if inst["zpos"]>=0:
                         z=inst["zpos"]
-                    devices['xyz-scanner'].move_to(x,y,z, unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
+                    self.devices['xyz-scanner'].move_to(x,y,z, unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
                 elif inst["xyz_pos_type"]=='rel':
-                    devices['xyz-scanner'].shift_to(inst["xpos"],inst["ypos"],inst["zpos"], unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
+                    self.devices['xyz-scanner'].shift_to(inst["xpos"],inst["ypos"],inst["zpos"], unit="scanner", go=True,smooth_move=None,show=False,sequenced=False,history_forward=False,clean_forward=True)
                 elif inst["xyz_pos_type"]=='idl':
                     pass
                 else:
@@ -63,17 +67,17 @@ class DAQ(multiprocessing.Process):
             for i in range(3):
                 axis=["alpha","beta","gamma"]
                 if inst["rot_pos_type"]=='abs':
-                    if instructions.rotPlatform[i]:
-                        devices['rotPlatform'].move(i, inst[axis[i]], rel=False, wait=True)
+                    if self.instructions.rotPlatform[i]:
+                        self.devices['rotPlatform'].move(i, inst[axis[i]], rel=False, wait=True)
                 elif inst["rot_pos_type"]=='rel':
-                    if instructions.rotPlatform[i]:
-                        devices['rotPlatform'].move(i, inst[axis[i]], rel=True, wait=True)
+                    if self.instructions.rotPlatform[i]:
+                        self.devices['rotPlatform'].move(i, inst[axis[i]], rel=True, wait=True)
                 elif inst["rot_pos_type"]=='idl':
                     pass
                 else:
                     raise ValueError('The positioning type %s is not known.', inst["rot_pos_type"])
-            if instructions.monochromator:
-                results.update({"Wavelength":self.monochromator.GetWave()})
+            if self.instructions.monochromator:
+                results.update({"Wavelength":self.devices["monochromator"].GetWave()})
             else:
                 results.update({"Wavelength":-1})
             if inst["delay"]>0:

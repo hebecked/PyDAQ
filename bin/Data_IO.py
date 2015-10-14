@@ -16,12 +16,12 @@ class files(object):
 			FILE.write(header)
 
 	def __enter__(self):
-		self.openfile=open(filename)
+		self.openfile=open(self.filename,"a")
 		return self
 
-	def append_line(line):
+	def append_line(self, line):
 		if self.openfile is None:
-			with open(self.filename,'a') as tempfile:
+			with open(self.filename,"a") as tempfile:
 				tempfile.write(line + '\n')
 		else:
 			self.openfile.write(line + '\n')

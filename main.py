@@ -5,6 +5,7 @@ from bin.parser_wrapper import parsers
 #import GUI
 from bin.DAQ.DAQ_frontend import DAQ_handler
 import multiprocessing
+import time
 
 """
 Definig and reading input parameters and config Files.
@@ -44,7 +45,8 @@ ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":argu
 daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val'])
 
 while daq.update()=='Running':
-	time.sleep(1)
+	print "test"
+	time.sleep(10)
 
 	
 
