@@ -140,7 +140,7 @@ class Scanner( object ):
         This function enables to go to [0,0,0] and initialize the (0,0,0)
         """
         for i in self._moving_sequence:
-            self._write_("Ref",i,None)
+            self._write_("Ref",i-1,None)
             if sequenced:
                 self._go_(wait_for_it=True)
                 
