@@ -404,14 +404,13 @@ class Scanner( object ):
     def read_position(self):
         """
         """
-        
+        time.sleep(scan_lag)
         x = self._read_message_("POSA1/")
-        time.sleep(0.2)
+        time.sleep(scan_lag)
         y = self._read_message_("POSA2/")
-        time.sleep(0.2)
+        time.sleep(scan_lag)
         z = self._read_message_("POSA3/")
-        time.sleep(0.2)
-        print x, y, z
+        #print x, y, z
         return int(x), int(y), int(z)
 
     
@@ -439,11 +438,14 @@ class Scanner( object ):
         
         message,add = "",""
         i = 0
-        while add!=self._end_message:
+        #message=self.ser.readline(eol="\x00")
+        while add!=self._end_message and add!="/":
             add = self.ser.read()
             message += add
             i +=1
-
+        print message
+        if message[-1]== "/":
+            message=message[0:-2]
         return message.split(self._end_message)[0]
     
     # ======================== #
@@ -591,7 +593,7 @@ class Scanner( object ):
             if prefix is not "Ref":
                 raise ValueError("Only Reference run (Ref as prefix) can have None as value")
             self.ser.write("%sA%d/"%(prefix,axis_))
-            print "sleep 1"
+            #print "sleep 1"
             time.sleep(scan_lag)
             return
         try:
@@ -608,11 +610,11 @@ class Scanner( object ):
             
         # - let's do it.
         self.ser.write(tobewritten)
-        print "%s done"%tobewritten
+        #print "%s done"%tobewritten
         # - forced pause.
         time.sleep(scan_lag)
-        print "sleep 2"
-        print "sleep over"
+        #print "sleep 2"
+        #print "sleep over"
         
 # ========================== #
 #  3d Scanner Basic Class    #

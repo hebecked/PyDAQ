@@ -45,14 +45,16 @@ ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":argu
 daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val'])
 
 while daq.update()=='Running':
-	print "test"
-	time.sleep(10)
+	#print "test"
+	time.sleep(1)
 
-	
 
 '''
 TODO:
 
 safety zone (1 dimension for now)
 add option to show plots on comandline
+check (pos) bug on xyz
+check "done" returne bug on XYZ
+
 '''

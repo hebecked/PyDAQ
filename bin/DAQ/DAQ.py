@@ -20,6 +20,8 @@ class DAQ(multiprocessing.Process):
 
     def run(self):
         for inst in self.instructions.instructions:
+            #print inst, "\n"
+            print "Step ", inst["#"]
             if self.pipe.poll():
                 self.do=self.pipe.recv()
             if self.do == "pause":
@@ -116,7 +118,6 @@ class DAQ(multiprocessing.Process):
                 results.update({'rLockInFreqErr':np.std(phaser)})
                 results.update({'rLockInPhase':np.mean(freqr)})
                 results.update({'rLockInPhaseErr':np.std(freqr)})
-
             results.update({'Misc':None})
 
             self.pipe.send(results)

@@ -74,6 +74,7 @@ class serialports:
 		    except (OSError, self.serial.SerialException):
 		        pass
 		self.ports=result
+		#alternatively python -m serial.tools.list_ports
 
 
 
@@ -100,9 +101,9 @@ class instructions(object):
 					1)wavelength 
 					2)grating 
 					3)filter 
-					4)readLockinr 
-					5)readLockins
-					6)avrgn
+					4)avrgn
+					5)readLockinr 
+					6)readLockins
 					7)xpos 
 					8)ypos 
 					9)zpos 
@@ -132,12 +133,17 @@ class instructions(object):
 					if float(inst[16]) != 0:
 						self.rotPlatform[2]=True
 					TODO_dict={}
-					task=["#","wavelength","grating","filter","readLockinr","readLockins","avrgn","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
+					task=["#","wavelength","grating","filter","avrgn","readLockinr","readLockins","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
 					for i in range(len(task)):
 						if i==5 or i==6:
-							TODO_dict.update({task[i]:bool(inst[i])})
+							if inst[i]=="False":
+								TODO_dict.update({task[i]:False})
+							else:
+								TODO_dict.update({task[i]:bool(inst[i])})
 						elif i==10 or i==17:
 							TODO_dict.update({task[i]:str(inst[i])})
+						elif i==18:
+							TODO_dict.update({task[i]:float(inst[i])})
 						else:
 							TODO_dict.update({task[i]:int(inst[i])})
 					self.instructions.append(TODO_dict)
