@@ -2,60 +2,64 @@
 
 import os, sys
 from bin.parser_wrapper import parsers
-#import GUI
-from bin.DAQ.DAQ_frontend import DAQ_handler
-import multiprocessing
+from bin.lockIn import lockin
+import os, sys
+import numpy as np
 import time
 
-"""
-Definig and reading input parameters and config Files.
-"""
+
+
 parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
 
-parser.add_argument( "InstructionFile", "-i", str, group="config", default=None, help='Please supply a instruction file describing all measurement steps. "-ih" will give you a format description.')
-parser.add_argument( "InstructionFileHelp", "-ih", bool, group=None, default=False, help='Gives out the format of the instruction file and exits.')
-parser.add_argument( "OutputFile", "-o", str, group="config", default="results.txt", help='Supply a file name for the results of the measurements')
-parser.add_argument( "GUI", "-g", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ. Runs won\'t start right away')
-parser.add_argument( "SignalLockInPort", "-slp", str, group="LockIn", default=None, help='Sets the com port for the signal Lock-In.', required=True)
-parser.add_argument( "ReferenceLockInPort", "-rlp", str, group="LockIn", default=None, help='Sets the com port for the reference Lock-In.', required=True)
-parser.add_argument( "XYZ_ScannerPort", "-sp", str, group="XYZ_Scanner", default=None, help='Sets the com port for the XYZ Scanner.', required=True)
-parser.add_argument( "MonochromatorPort", "-mp", str, group="Monochromator", default=None, help='Sets the com port for the Monochromator.', required=True)
-parser.add_argument( "RotationalPlatformPort", "-rp", str, group="RotationalPlatform", default=None, help='Sets the port for the RotationalPlatform.', required=True)
-parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner", default=[0,100], help='Please supply a safety range along the x-axis for your experiment in units of percent.', multiargs=True, multiargsn=2, required=True)
-
-#TODo add flags for showing plots in command line mode
+parser.add_argument( "PortReference", "-pr", str, group="LockIn", default=None, help='Used to define the Port for the reference LockIn')
+parser.add_argument( "PortSignal", "-ps", str, group="LockIn", default=None, help='Used to define the Port for the signal LockIn')
+parser.add_argument( "Autogain", "-ag", bool, group="LockIn", default=True, help='Defines if autogain will be used.')
+parser.add_argument( "AverageValues", "-an", int, group="LockIn", default=10, help='Defines amount of measurements to average over.')
+parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
+parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
 
 arguments=parser.done()
 
-if arguments["InstructionFileHelp"]['val']:
-	print "TODO: help"
-	exit()
 
-if not parser.args.SCONFIG==None:
-	parser.storeConfig()
+if arguments["ReadSignalLockIn"]['val'] and not arguments["ReadReferenceLockIn"]['val']:
+	signal=lockin( port, avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+	sdata=[signal.StandardData(N=arguments['AverageValues']['val'])] # returns return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
+	print 'Amp_mean Amp_err Phase_mean Phase_err Freq_mean Freq_err'
+	print sdata
 
-if arguments["GUI"]['val']:
-#	gui=GUI(parser)
-	pass
-	#exit()
-path2outfile = os.path.split(os.path.abspath(sys.modules['__main__'].__file__))[0]
-outfile = os.path.join(path2outfile, arguments["OutputFile"]["val"] + time.strftime("_%d.%m.%y_%H.%M.result"))
+if arguments["ReadReferenceLockIn"]['val'] and not arguments["ReadSignalLockIn"]['val']:
+	reference=lockin( port, avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+	rdata=[reference.StandardData(N=arguments['AverageValues']['val'])] # returns return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
+	print 'Amp_mean Amp_err Phase_mean Phase_err Freq_mean Freq_err'
+	print rdata
 
-#simple for the beginning, do error handling LATER
-ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
-daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, outfile)
+if arguments["ReadReferenceLockIn"]['val'] and arguments["ReadSignalLockIn"]['val']:
+	for i in range(arguments['AverageValues']['val']):
+		sampl,sphase,sfreq = self.devices['sLockIn'].StandardData(N=1)
+		ampls.append(sampl)
+		phases.append(sphase)
+		freqs.append(sfreq)
 
-while daq.update()=='Running':
-	#print "test"
-	time.sleep(1)
+		rampl,rphase,rfreq = self.devices['rLockIn'].StandardData(N=1)
+		amplr.append(rampl)
+		phaser.append(rphase)
+		freqr.append(rfreq)
 
+	results={}
 
-'''
-TODO:
+	results.update({'sLockIn':np.mean(ampls)})
+	results.update({'sLockInErr':np.std(ampls)})
+	results.update({'sLockInFreq':np.mean(phases)})
+	results.update({'sLockInFreqErr':np.std(phases)})
+	results.update({'sLockInPhase':np.mean(freqs)})
+	results.update({'sLockInPhaseErr':np.std(freqs)})
 
-safety zone (1 dimension for now)
-add option to show plots on comandline
-check (pos) bug on xyz
-check "done" returne bug on XYZ
-wait for positioning on xyz
-'''
+	results.update({'rLockIn':np.mean(amplr)})
+	results.update({'rLockInErr':np.std(amplr)})
+	results.update({'rLockInFreq':np.mean(phaser)})
+	results.update({'rLockInFreqErr':np.std(phaser)})
+	results.update({'rLockInPhase':np.mean(freqr)})
+	results.update({'rLockInPhaseErr':np.std(freqr)})
+
+	return results
+
