@@ -10,8 +10,7 @@ class files(object):
 
 	def init_file(self, header, override=False):
 		if self.isfile and not override:
-			print "Error the file " + self.filename + "exists already\nExiting!!!"
-			exit()
+			raise ValueError("Error the file " + self.filename + "exists already\nExiting!!!")
 		with open(self.filename,'w') as FILE:
 			FILE.write(header)
 

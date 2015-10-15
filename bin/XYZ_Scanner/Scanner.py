@@ -193,7 +193,8 @@ class Scanner( object ):
                                                                  shift=False)
         self._requested_shift = self._requested_coords - self.current_coords
         if (self._requested_shift == N.asarray([0,0,0])).all():
-            print "WARNING: You requested the coordinate you currently have. Nothing happens"
+            if self._verbose:
+                print "WARNING: You requested the coordinate you currently have. Nothing happens"
             return
         
         # -- Can we ? 
@@ -443,7 +444,8 @@ class Scanner( object ):
             add = self.ser.read()
             message += add
             i +=1
-        print message
+        if self._verbose:
+            print message
         if message[-1]== "/":
             message=message[0:-2]
         return message.split(self._end_message)[0]

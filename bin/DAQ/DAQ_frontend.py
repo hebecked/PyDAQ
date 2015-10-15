@@ -15,7 +15,7 @@ class DAQ_handler(object):
 		self.instructions=instructions(instructionfile)
 		self.datastorage=[]
 		self.resultfile=files(resultfile)
-		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc\n")
+		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc\n",  override=False)
 		 #init devices if aplicable allow access to device in main programm if possible
 		self.devices={}
 		if self.instructions.monochromator:

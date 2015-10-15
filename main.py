@@ -15,9 +15,9 @@ parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astro
 parser.add_argument( "InstructionFile", "-i", str, group="config", default=None, help='Please supply a instruction file describing all measurement steps. "-ih" will give you a format description.')
 parser.add_argument( "InstructionFileHelp", "-ih", bool, group=None, default=False, help='Gives out the format of the instruction file and exits.')
 parser.add_argument( "OutputFile", "-o", str, group="config", default="results.txt", help='Supply a file name for the results of the measurements')
-parser.add_argument( "GUI", "-g", bool, group="config", default=True, help='Set this flag to use a graphical user interface to configure and supervise the DAQ. Runs won\'t start right away')
+parser.add_argument( "GUI", "-g", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ. Runs won\'t start right away')
 parser.add_argument( "SignalLockInPort", "-slp", str, group="LockIn", default=None, help='Sets the com port for the signal Lock-In.', required=True)
-parser.add_argument( "ReferenceMLockInPort", "-rlp", str, group="LockIn", default=None, help='Sets the com port for the reference Lock-In.', required=True)
+parser.add_argument( "ReferenceLockInPort", "-rlp", str, group="LockIn", default=None, help='Sets the com port for the reference Lock-In.', required=True)
 parser.add_argument( "XYZ_ScannerPort", "-sp", str, group="XYZ_Scanner", default=None, help='Sets the com port for the XYZ Scanner.', required=True)
 parser.add_argument( "MonochromatorPort", "-mp", str, group="Monochromator", default=None, help='Sets the com port for the Monochromator.', required=True)
 parser.add_argument( "RotationalPlatformPort", "-rp", str, group="RotationalPlatform", default=None, help='Sets the port for the RotationalPlatform.', required=True)
@@ -31,18 +31,19 @@ if arguments["InstructionFileHelp"]['val']:
 	print "TODO: help"
 	exit()
 
-#if arguments["SCONFIG"]['status']=='set':
-#if not parser.args.CONFIG==None:
-#	parser.storeConfig()
+if not parser.args.SCONFIG==None:
+	parser.storeConfig()
 
 if arguments["GUI"]['val']:
 #	gui=GUI(parser)
 	pass
 	#exit()
+path2outfile = os.path.split(os.path.abspath(sys.modules['__main__'].__file__))[0]
+outfile = os.path.join(path2outfile, arguments["OutputFile"]["val"] + time.strftime("_%d.%m.%y_%H.%M.result"))
 
 #simple for the beginning, do error handling LATER
-ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceMLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
-daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, arguments["OutputFile"]['val'])
+ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
+daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, outfile)
 
 while daq.update()=='Running':
 	#print "test"
@@ -56,5 +57,5 @@ safety zone (1 dimension for now)
 add option to show plots on comandline
 check (pos) bug on xyz
 check "done" returne bug on XYZ
-
+wait for positioning on xyz
 '''

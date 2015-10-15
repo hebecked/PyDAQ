@@ -6,9 +6,10 @@ class parsers:
 	"""
 	A small wrapper to merge argparse and ConfigParser.
 	There are other possibly easier ways to do this.
-	However this wrapper has a view advantages.
+	However this wrapper has a few advantages.
 	You just include it and use it as you used argparse before with the additional comfort of 
 	being able to store them in a config. While it is still possible to overwrite them with a command line flag.
+	Elements of the group None will not be included in the storing process
 	"""
 
 
@@ -28,15 +29,15 @@ class parsers:
 		if not isinstance(datatype, type):
 			print "You need to supply a datatype for datatype"
 		if multiargs:
-			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help, nargs=multiargsn)
+			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=None, help=help, nargs=multiargsn)
 		elif datatype==bool:
 			if default==True:
 				self.parser.add_argument(flag, '--' + name, dest=name, action='store_false', default=True, help=help) #type=bool removed
 			else:
 				self.parser.add_argument(flag, '--' + name, dest=name, action='store_true', default=False, help=help) #type=bool removed
 		else:
-			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=default, help=help)
-		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs}
+			self.parser.add_argument(flag, '--' + name, dest=name, action='store', type=datatype, default=None, help=help)
+		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs, "default":default}
 
 
 	def done(self):
@@ -47,6 +48,7 @@ class parsers:
 		"""
 		self.args = self.parser.parse_args()
 		self.config = ConfigParser.ConfigParser()
+		self.config.optionxform = str
 		if not self.args.CONFIG==None:
 			self.config.read(self.args.CONFIG)
 			config_args=self._as_dict(self.config)
@@ -66,15 +68,20 @@ class parsers:
 					try:
 						val=self.elements[name]['type'](config_args[self.elements[name]['group']][name])
 					except:
-						print str(config_args[self.elements[name]['group']][name])+ " is not " + str(self.elements[name]['type'])
-						exit()
+						raise valueError(str(config_args[self.elements[name]['group']][name]) + " is not " + str(self.elements[name]['type']))
 					self.elements[name].update({'val': val, 'status': "set"})
 				else:
-					if self.elements[name]['required']:
-						print "Error the element " + self.elements[name] + " is required.\n Pleas supply by flag or config.\n[EXITING]"
-						exit()
+					if self.elements[name]["default"]!=None:
+						try:
+							val=self.elements[name]['type'](self.elements[name]["default"])
+						except:
+							raise valueError(str(config_args[self.elements[name]['group']][name]) + " is not " + str(self.elements[name]['type']))
+						self.elements[name].update({'val': val, 'status': "set"})
 					else:
-						self.elements[name].update({'val': None, 'status': "notset"})
+						if self.elements[name]['required']:
+							raise ValueError("Error the element " + str(name) + " is required.\n Please supply by flag or config.\n[EXITING]")
+						else:
+							self.elements[name].update({'val': None, 'status': "notset"})
 		return self.elements
 
 
@@ -130,10 +137,13 @@ class parsers:
 		"""
 		new_dict = {}
 		new_confparser=ConfigParser.ConfigParser()
+		new_confparser.optionxform = str
 		for name in self.elements:
-			new_dict[self.elements[name]['group']]={}
+			if self.elements[name]['group']!=None:
+				new_dict[self.elements[name]['group']]={}
 		for name in self.elements:
-			new_dict[self.elements[name]['group']].update({name:self.elements[name]['val']})
+			if self.elements[name]['group']!=None:
+				new_dict[self.elements[name]['group']].update({name:self.elements[name]['val']})
 		for group in new_dict:
 			new_confparser.add_section(group)
 			for val in new_dict[group]:
@@ -142,7 +152,7 @@ class parsers:
 			filename = self.args.SCONFIG
 		else:
 			if filename=='__':
-				print "Please, specify a file name to store the config file."
+				raise ValueError("Please, specify a file name to store the config file.")
 		with open(filename, 'wb') as configfile:
 			new_confparser.write(configfile)
 
