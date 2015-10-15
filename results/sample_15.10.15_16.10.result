@@ -1,7 +1,0 @@
-#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc
-1	349.982	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	None	
-2	400.008	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	None	
-3	450.000	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	None	
-4	500.006	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	None	
-5	549.997	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	None	
-6	600.010	0.0	0.0	0.0	0.0	0.0	0.0	209.9874	0.0396413925083	0.0	0.0	210.0077	0.0454115624043	None	
