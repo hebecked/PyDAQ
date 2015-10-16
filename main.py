@@ -55,4 +55,5 @@ add option to show plots on comandline
 check (pos) bug on xyz
 check "done" returne bug on XYZ
 wait for positioning on xyz
+make it possible for all commandline tools to use the same config file
 '''
