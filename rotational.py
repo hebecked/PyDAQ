@@ -21,7 +21,7 @@ parser.add_argument( "angle3", "-a3", float, group="RotationalPlatform", default
 parser.add_argument( "angle1r", "-a1r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 1 relative to the current position in units of degree. Will be run before -i.')
 parser.add_argument( "angle2r", "-a2r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 2 relative to the current position in units of degree. Will be run before -i.')
 parser.add_argument( "angle3r", "-a3r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 relative to the current position in units of degree. Will be run before -i.')
-parser.add_argument( "init", "-i", bool, group="RotationalPlatform", default=False, help='Defines wheather or not to initialise/home the devices befor use.')
+parser.add_argument( "init", "-i", bool, group="RotationalPlatform", default=True, help='Use if device is already initialized to avoid homing.')
 parser.add_argument( "port", "-p", str, group="RotationalPlatform", default=None, help='Defines the Port to connect to the device.')
 
 arguments=parser.done(store_if_file_supplied=True)
@@ -40,7 +40,6 @@ for i in range(len(use)):
 	else:
 		init.append(False)
 
-
 devices=rotStages(port=arguments['port']['val'], unit="deg", Channels=use, init=init) # later 'Auto'
 
 for i in range(len(use)):
@@ -49,4 +48,4 @@ for i in range(len(use)):
 
 for i in range(len(use)):
 	if arguments['angle'+str(i+1)+'r']['val']!=None:
-		devices.move( i, arguments['angle'+str(i+1)]['val'], rel=True, wait=True)
+		devices.move( i, arguments['angle'+str(i+1)+'r']['val'], rel=True, wait=True)

@@ -221,6 +221,8 @@ class rotPlatform:
         if not init:
             if not self.getDevicePos():
                 raise ValueError("Device is not initialized.")
+            else:
+                return
         elif init=="Auto":
             if self.getDevicePos():
                 return
