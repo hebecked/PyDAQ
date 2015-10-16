@@ -25,14 +25,11 @@ parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner",
 
 #TODo add flags for showing plots in command line mode
 
-arguments=parser.done()
+arguments=parser.done(store_if_file_supplied=True)
 
 if arguments["InstructionFileHelp"]['val']:
 	print "TODO: help"
 	exit()
-
-if not parser.args.SCONFIG==None:
-	parser.storeConfig()
 
 if arguments["GUI"]['val']:
 #	gui=GUI(parser)

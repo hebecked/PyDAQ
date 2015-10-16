@@ -18,7 +18,7 @@ parser.add_argument( "AverageValues", "-an", int, group="LockIn", default=10, he
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
 
-arguments=parser.done()
+arguments=parser.done(store_if_file_supplied=True)
 
 
 if arguments["ReadSignalLockIn"]['val'] and not arguments["ReadReferenceLockIn"]['val']:

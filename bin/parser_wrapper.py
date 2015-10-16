@@ -40,7 +40,7 @@ class parsers:
 		self.elements[name]={'type': datatype, 'status': 'init', 'required': required, 'group': group, 'multiargs': multiargs, "default":default}
 
 
-	def done(self):
+	def done(self, store_if_file_supplied=False):
 		"""
 		After adding all the arguments you need this to do all the conversions.
 		It will return a dict including all arguments set and their properties.
@@ -82,6 +82,8 @@ class parsers:
 							raise ValueError("Error the element " + str(name) + " is required.\n Please supply by flag or config.\n[EXITING]")
 						else:
 							self.elements[name].update({'val': None, 'status': "notset"})
+		if store_if_file_supplied:
+			self.storeConfigQM()
 		return self.elements
 
 
@@ -156,3 +158,6 @@ class parsers:
 		with open(filename, 'wb') as configfile:
 			new_confparser.write(configfile)
 
+	def storeConfigQM(self):
+		if cmd_args['SCONFIG']!=None:
+			self.storeConfig()

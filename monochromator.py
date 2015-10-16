@@ -22,7 +22,7 @@ parser.add_argument( "ShutterOpen", "-so", bool, group="Settings", default=False
 parser.add_argument( "ShutterClose", "-sc", bool, group="Settings", default=False, help='Will close the shutter')
 parser.add_argument( "Info", "-i", float, group="Return", default=None, help='Gives a output on the current monochromator settings') #possibly ad more Return options to obtain informations individually
 
-arguments=parser.done()
+arguments=parser.done(store_if_file_supplied=True)
 
 cs = CornerStone260( port = arguments["Port"])
 
