@@ -77,7 +77,6 @@ class lockin:
 			phase=[]
 			freq=[]
 			for i in range(0,N):
-				print self.timeconstant
 				time.sleep(self.timeconstant)
 				self.ser.flushInput()    
 				self.ser.write('OUTP?3' + self.sendtermchar)

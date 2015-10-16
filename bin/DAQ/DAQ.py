@@ -106,18 +106,18 @@ class DAQ(multiprocessing.Process):
             if self.instructions.sLockIn and inst["readLockins"]:
                 results.update({'sLockIn':np.mean(ampls)})
                 results.update({'sLockInErr':np.std(ampls)})
-                results.update({'sLockInFreq':np.mean(phases)})
-                results.update({'sLockInFreqErr':np.std(phases)})
-                results.update({'sLockInPhase':np.mean(freqs)})
-                results.update({'sLockInPhaseErr':np.std(freqs)})
+                results.update({'sLockInFreq':np.mean(freqs)})
+                results.update({'sLockInFreqErr':np.std(freqs)})
+                results.update({'sLockInPhase':np.mean(phases)})
+                results.update({'sLockInPhaseErr':np.std(phases)})
 
             if self.instructions.rLockIn and inst["readLockinr"]:
                 results.update({'rLockIn':np.mean(amplr)})
                 results.update({'rLockInErr':np.std(amplr)})
-                results.update({'rLockInFreq':np.mean(phaser)})
-                results.update({'rLockInFreqErr':np.std(phaser)})
-                results.update({'rLockInPhase':np.mean(freqr)})
-                results.update({'rLockInPhaseErr':np.std(freqr)})
+                results.update({'rLockInFreq':np.mean(freqr)})
+                results.update({'rLockInFreqErr':np.std(freqr)})
+                results.update({'rLockInPhase':np.mean(phaser)})
+                results.update({'rLockInPhaseErr':np.std(phaser)})
             results.update({'Misc':None})
 
             self.pipe.send(results)

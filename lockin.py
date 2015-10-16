@@ -20,27 +20,36 @@ parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", defaul
 
 arguments=parser.done(store_if_file_supplied=True)
 
+if arguments["ReadSignalLockIn"]['val']:
+	signal=lockin(  port=arguments["PortReference"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+if arguments["ReadReferenceLockIn"]['val']:
+	reference=lockin( port=arguments["PortReference"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+
 
 if arguments["ReadSignalLockIn"]['val'] and not arguments["ReadReferenceLockIn"]['val']:
-	signal=lockin( port, avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 	sdata=[signal.StandardData(N=arguments['AverageValues']['val'])] # returns return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
 	print 'Amp_mean Amp_err Phase_mean Phase_err Freq_mean Freq_err'
 	print sdata
 
 if arguments["ReadReferenceLockIn"]['val'] and not arguments["ReadSignalLockIn"]['val']:
-	reference=lockin( port, avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 	rdata=[reference.StandardData(N=arguments['AverageValues']['val'])] # returns return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
 	print 'Amp_mean Amp_err Phase_mean Phase_err Freq_mean Freq_err'
 	print rdata
 
 if arguments["ReadReferenceLockIn"]['val'] and arguments["ReadSignalLockIn"]['val']:
+	ampls=[]
+	amplr=[]
+	phases=[]
+	phaser=[]
+	freqs=[]
+	freqr=[]
 	for i in range(arguments['AverageValues']['val']):
-		sampl,sphase,sfreq = self.devices['sLockIn'].StandardData(N=1)
+		sampl,sphase,sfreq = signal.StandardData(N=1)
 		ampls.append(sampl)
 		phases.append(sphase)
 		freqs.append(sfreq)
 
-		rampl,rphase,rfreq = self.devices['rLockIn'].StandardData(N=1)
+		rampl,rphase,rfreq = reference.StandardData(N=1)
 		amplr.append(rampl)
 		phaser.append(rphase)
 		freqr.append(rfreq)
@@ -49,17 +58,17 @@ if arguments["ReadReferenceLockIn"]['val'] and arguments["ReadSignalLockIn"]['va
 
 	results.update({'sLockIn':np.mean(ampls)})
 	results.update({'sLockInErr':np.std(ampls)})
-	results.update({'sLockInFreq':np.mean(phases)})
-	results.update({'sLockInFreqErr':np.std(phases)})
-	results.update({'sLockInPhase':np.mean(freqs)})
-	results.update({'sLockInPhaseErr':np.std(freqs)})
+	results.update({'sLockInFreq':np.mean(freqs)})
+	results.update({'sLockInFreqErr':np.std(freqs)})
+	results.update({'sLockInPhase':np.mean(phases)})
+	results.update({'sLockInPhaseErr':np.std(phases)})
 
 	results.update({'rLockIn':np.mean(amplr)})
 	results.update({'rLockInErr':np.std(amplr)})
-	results.update({'rLockInFreq':np.mean(phaser)})
-	results.update({'rLockInFreqErr':np.std(phaser)})
-	results.update({'rLockInPhase':np.mean(freqr)})
-	results.update({'rLockInPhaseErr':np.std(freqr)})
+	results.update({'rLockInFreq':np.mean(freqr)})
+	results.update({'rLockInFreqErr':np.std(freqr)})
+	results.update({'rLockInPhase':np.mean(phaser)})
+	results.update({'rLockInPhaseErr':np.std(phaser)})
 
-	return results
+	print results
 
