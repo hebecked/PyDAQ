@@ -159,5 +159,5 @@ class parsers:
 			new_confparser.write(configfile)
 
 	def storeConfigQM(self):
-		if cmd_args['SCONFIG']!=None:
+		if vars(self.args)['SCONFIG']!=None:
 			self.storeConfig()

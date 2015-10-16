@@ -134,7 +134,7 @@ class CornerStone260:
         return self.SerialQuery('SHUTTER?')        
 
     def Filter(self,n):
-        """Moves the filter wheel to the position specified in 'n' """
+        """Moves the filter wheel to the position specified in 'n' """ #1-6 are possibilities
         return self.SerialCommand('FILTER %d' % (n))
     def GetFilter(self):
         """Returns the current filter position"""
