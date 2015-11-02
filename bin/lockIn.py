@@ -61,6 +61,8 @@ class lockin:
 
 	def StandardData(self,N=10):
 		#setup - if a Serial object can't be created, a SerialException will be raised.
+		if self.autogain and not self.AutoGain():
+			return -1,0,-1,0,-1,0
 		while True:
 			try:
 				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize,parity='N',stopbits=1)
@@ -70,8 +72,6 @@ class lockin:
 				print 'waiting for device ' + self.port + ' to be available'
 				time.sleep(3)
 		self.ser.flushInput()  
-		#if self.autogain and not self.AutoGain():
-		#	return -1,0,-1,0,-1,0
 		if N>1:
 			ampl=[]
 			phase=[]

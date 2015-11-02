@@ -19,8 +19,9 @@ class DAQ(multiprocessing.Process):
 
 
     def run(self):
+        timestart=time.time()
+        z=1
         for inst in self.instructions.instructions:
-            #print inst, "\n"
             print "Step ", inst["#"]
             if self.pipe.poll():
                 self.do=self.pipe.recv()
@@ -90,6 +91,10 @@ class DAQ(multiprocessing.Process):
             phases=[]
             freqr=[]
             freqs=[]
+            if self.instructions.sLockIn and inst["readLockins"]:
+                self.devices['sLockIn'].AutoGain()
+            if self.instructions.rLockIn and inst["readLockinr"]:
+                self.devices['rLockIn'].AutoGain()
             for i in range(inst['avrgn']):
                 if self.instructions.sLockIn and inst["readLockins"]:
                     sampl,sphase,sfreq = self.devices['sLockIn'].StandardData(N=1)
@@ -121,6 +126,9 @@ class DAQ(multiprocessing.Process):
             results.update({'Misc':None})
 
             self.pipe.send(results)
+            time_left=float(time.time()-timestart)*float(len(self.instructions.instructions)-z)/float(z)
+            print "%02d:%02d:%02d" % (time_left/3600, time_left/60, time_left%60) , " left"
+            z+=1
         self.pipe.send('DONE')
         return	
 
