@@ -1,7 +1,7 @@
 # v=1 (gives the version number of the instruction file)
 #numbers indicate position in each line
 #1)measurement/step# 	#continues numeration with integers to accociate measurements to instructions
-#2)wavelength 		#wavelength in nm, 0 for white light and-1 for no change 
+#2)wavelength 		#wavelength in nm, 0 for white light and -1 for no change 
 #3)grating 		#grating number as integer, -1 for no change, -2 for auto adapt(not implemented yet) 
 #4)filter 		#filter number as integer, -1 for no change
 #5)argvn 		#Number of measurements to average over

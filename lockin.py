@@ -13,7 +13,7 @@ parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astro
 
 parser.add_argument( "PortReference", "-pr", str, group="LockIn", default=None, help='Used to define the Port for the reference LockIn')
 parser.add_argument( "PortSignal", "-ps", str, group="LockIn", default=None, help='Used to define the Port for the signal LockIn')
-parser.add_argument( "Autogain", "-ag", bool, group="LockIn", default=True, help='Defines if autogain will be used.')
+parser.add_argument( "Autogain", "-ag", bool, group="LockIn", default=False, help='Defines if autogain will be used.')
 parser.add_argument( "AverageValues", "-an", int, group="LockIn", default=10, help='Defines amount of measurements to average over.')
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
@@ -21,7 +21,7 @@ parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", defaul
 arguments=parser.done(store_if_file_supplied=True)
 
 if arguments["ReadSignalLockIn"]['val']:
-	signal=lockin(  port=arguments["PortReference"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+	signal=lockin(  port=arguments["PortSignal"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 if arguments["ReadReferenceLockIn"]['val']:
 	reference=lockin( port=arguments["PortReference"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 

@@ -127,12 +127,13 @@ class instructions(object):
 						self.sLockIn=True
 					if inst[10] != "idl":
 						self.XYZ_Scanner=True
-					if float(inst[14]) != 0:#This needs to change in future file versions
-						self.rotPlatform[0]=True
-					if float(inst[15]) != 0:
-						self.rotPlatform[1]=True
-					if float(inst[16]) != 0:
-						self.rotPlatform[2]=True
+					if str(inst[17]) != "idl":
+						if float(inst[14]) != 0:#This needs to change in future file versions
+							self.rotPlatform[0]=True
+						if float(inst[15]) != 0:
+							self.rotPlatform[1]=True
+						if float(inst[16]) != 0:
+							self.rotPlatform[2]=True
 					TODO_dict={}
 					task=["#","wavelength","grating","filter","avrgn","readLockinr","readLockins","xpos","ypos","zpos","xyz_pos_type","vx","vy","vz","alpha","beta","gamma","rot_pos_type","delay"]
 					for i in range(len(task)):

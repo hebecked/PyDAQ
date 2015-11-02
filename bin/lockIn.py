@@ -70,15 +70,15 @@ class lockin:
 				print 'waiting for device ' + self.port + ' to be available'
 				time.sleep(3)
 		self.ser.flushInput()  
-		if self.autogain and not self.AutoGain():
-			return -1,0,-1,0,-1,0
+		#if self.autogain and not self.AutoGain():
+		#	return -1,0,-1,0,-1,0
 		if N>1:
 			ampl=[]
 			phase=[]
 			freq=[]
 			for i in range(0,N):
 				time.sleep(self.timeconstant)
-				self.ser.flushInput()    
+				self.ser.flushInput()
 				self.ser.write('OUTP?3' + self.sendtermchar)
 				help=float(self._read_LI())
 				ampl.append(help)
@@ -94,7 +94,7 @@ class lockin:
 			return np.mean(ampl),np.std(ampl),np.mean(phase),np.std(phase),np.mean(freq),np.std(freq)
 		else:
 			time.sleep(self.timeconstant)
-			self.ser.flushInput()    
+			self.ser.flushInput()
 			self.ser.write('OUTP?3' + self.sendtermchar)
 			ampl=float(self._read_LI())
 			time.sleep(0.01)
@@ -116,7 +116,7 @@ class lockin:
  		change=20
  		while change!=0:
  			temp=self.SerialQuery('OUTP?3')
- 			print temp
+ 			#print temp
  			value=float(temp)
  			index=np.argmin(np.abs(value-np.asarray(list_)))
  			if value>list_[index]:

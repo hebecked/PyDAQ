@@ -25,10 +25,10 @@ class DAQ_handler(object):
 			self.devices['xyz-scanner']=Scanner.Scanner(port=ports["xyz-scanner"],do_refrun=True,smooth_move=False,debug=False,show=False)
 
 		if self.instructions.sLockIn:
-			self.devices['sLockIn']=lockIn.lockin(port=ports['sLockIn'], autogain=False, timeconstant=0.3)
+			self.devices['sLockIn']=lockIn.lockin(port=ports['sLockIn'], autogain=True, timeconstant=0.3)
 
 		if self.instructions.rLockIn:
-			self.devices['rLockIn']=lockIn.lockin(port=ports['rLockIn'], autogain=False, timeconstant=0.3)
+			self.devices['rLockIn']=lockIn.lockin(port=ports['rLockIn'], autogain=True, timeconstant=0.3)
 
 		if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:
 			self.devices['rotPlatform']=rotLib.rotStages(port=ports['rotPlatform'], unit="deg", Channels=self.instructions.rotPlatform, init=self.instructions.rotPlatform) #switch to init true
