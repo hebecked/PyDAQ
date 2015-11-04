@@ -66,17 +66,64 @@ class serialports:
 		    ports = self.glob.glob('/dev/tty.*')
 		else:
 		    raise EnvironmentError('Unsupported platform')
-		result = []
-		for port in ports:
-		    try:
-		        s = self.serial.Serial(port)
-		        s.close()
-		        result.append(port)
-		    except (OSError, self.serial.SerialException):
-		        pass
-		self.ports=result
+		self.ports=ports
 		#alternatively python -m serial.tools.list_ports
 
+	def find_monochromator(self):
+		for port in self.ports:
+			try:
+				ser = self.serial.Serial(port, 9600, timeout=2)
+				ser.flushInput()        
+				ser.write('INFO?' + "\r\n")
+				answer1 = ser.readline()
+				answer2 = ser.readline()
+				ser.close()
+				if answer2[:-2]=='INFO?':
+					return port
+			except:
+				pass
+		return ''
+
+	def find_lockin(self, IDN=None):
+		for port in self.ports:
+			try:
+				ser = self.serial.Serial(port, 19200, timeout=2, bytesize=8, parity='N', stopbits=1)
+				ser.flushInput()
+				ser.write("*IDN?" + '\n')
+				answer = self._read_LI()
+				self.ser.close()
+				if answere==IDN or IDN==None:
+					return port
+			except:
+				pass
+		return ''
+
+
+	def find_sig_lockin(self):
+		return self.find_lockin(self, IDN=None)
+
+	def find_ref_lockin(self):
+		return self.find_lockin(self, IDN=None)
+
+
+	def _read_LI(self):
+		list_=[]
+		help=0
+		while help!='\r':
+			help=self.ser.read()
+			list_.append(help)
+		return ''.join(list_[0:-1])
+
+
+	def find_rot_platform(self):
+		return ''
+
+
+	def find_xyz(self):
+		return ''
+
+	def find_all_devices(self):
+		return {'monochromator':self.find_monochromator(), "sig_lockin":self.find_sig_lockin(),  "ref_lockin":self.find_ref_lockin()}
 
 
 class instructions(object):
