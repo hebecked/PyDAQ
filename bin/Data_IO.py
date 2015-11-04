@@ -177,7 +177,7 @@ class instruction_maker(object):
 		self.file.init_file(header, override=True)
 		self.count=0
 
-	def add_instruction(self,wavelength=-1,grating=-1,filter_=-1,avrgn=10,readLockinr=False,readLockins=False,xpos=0,ypos=0,zpos=0,xyz_pos_type='idl',vx=-1,vy=-1,vz=-1,alpha=-1,beta=-1,gamma=-1,rot_pos_type='idl',delay=0):
+	def add_instruction(self,wavelength=-1,grating=-1,filter_=-1,avrgn=10,readLockinr=False,readLockins=False,xpos=0,ypos=0,zpos=0,xyz_pos_type='idl',vx=-1,vy=-1,vz=-1,alpha=0,beta=0,gamma=0,rot_pos_type='idl',delay=0):
 		'''Add new instructions. Default values will do nothing.'''
 		line=''
 		if self.version==1:
