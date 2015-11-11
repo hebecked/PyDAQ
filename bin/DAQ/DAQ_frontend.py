@@ -88,10 +88,15 @@ class DAQ_handler(object):
 
 	def __del__(self):
 		self.pipe.send("stop")
-		self.devices['xyz-scanner'].close()
-		del self.devices['monochromator']
-		del self.devices['xyz-scanner']
-		del self.devices['sLockIn']
-		del self.devices['rLockIn']
-		del self.devices['rotPlatform']
+		if self.instructions.XYZ_Scanner:
+			self.devices['xyz-scanner'].close()
+			del self.devices['xyz-scanner']
+		if self.instructions.monochromator:
+			del self.devices['monochromator']
+		if self.instructions.rLockIn:
+			del self.devices['sLockIn']
+		if self.instructions.sLockIn:
+			del self.devices['rLockIn']
+		if self.instructions.rotPlatform[0] or self.instructions.rotPlatform[1] or self.instructions.rotPlatform[2]:	
+			del self.devices['rotPlatform']
 		del self.DAQ
