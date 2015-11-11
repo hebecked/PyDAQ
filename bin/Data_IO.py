@@ -105,7 +105,6 @@ class serialports:
 	def find_ref_lockin(self):
 		return self.find_lockin(self, IDN=None)
 
-
 	def _read_LI(self):
 		list_=[]
 		help=0
