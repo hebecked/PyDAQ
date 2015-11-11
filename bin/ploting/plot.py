@@ -16,6 +16,7 @@ import numpy as np
 class live_plots:
 	"""A small class for continuusly updating plots"""
 
+#also add 3d
 
 	def __init__(self,x_min,x_max,x_label="Time",y_label="Temperature [C]",y2_label="Humidity [%]",color1='r',color2='b',two_plots=False):#variable x and or y autoscale (maybe a default and then additional function?)
 		self.color1=color1
