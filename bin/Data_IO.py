@@ -196,6 +196,18 @@ class serialports:
 		#return {'monochromator':self.mono, "sig_lockin":self.sig,  "ref_lockin":self.ref, "rot_platform":self.rot, "XYZ_Scanner":self.xyz}
 
 
+	def get_ports(self,refresh=False, path='configs/ports.store'):
+	if refresh:
+		ports=self.find_all_devices()
+		with open(path,'w') as file_:
+			json.dump(ports,file_)
+	else:
+		with open(path,'r') as file_:
+			ports=json.load(file_)
+	return ports
+
+
+
 class instructions(object):
 
 	def __init__(self, instrctionfile):

@@ -14,7 +14,7 @@ Definig and reading input parameters and config Files.
 parser=parsers("This is a Monochromator control sub-/main-program for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
 
 parser.add_argument( "GUI", "-gui", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ.')
-parser.add_argument( "Port", "-p", str, group="basics", default=None, help='Sets the com port for the Monochromator.', required=True)
+#parser.add_argument( "Port", "-p", str, group="basics", default=None, help='Sets the com port for the Monochromator.', required=True)
 parser.add_argument( "Wavelength", "-wvl", float, group="Settings", default=None, help='Allows to set a wavelength manually in units of nm')
 parser.add_argument( "OutPort", "-op", int, group="Settings", default=None, help='Allows to set the out port manually. (1-2)')
 parser.add_argument( "Filter", "-f", int, group="Settings", default=None, help='Allows to set a Filter manually. (1-6)')
@@ -22,10 +22,13 @@ parser.add_argument( "Grating", "-g", int, group="Settings", default=None, help=
 parser.add_argument( "ShutterOpen", "-sO", bool, group="Settings", default=False, help='Will open the shutter')
 parser.add_argument( "ShutterClose", "-sC", bool, group="Settings", default=False, help='Will close the shutter')
 parser.add_argument( "Info", "-i", bool, group="Return", default=False, help='Gives a output on the current monochromator settings and type.') #possibly ad more Return options to obtain informations individually
+parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 
-cs = CornerStone260(port = arguments["Port"]['val'])
+ports=DIO.serialports().get_ports(refresh=arguments['ReadPorts']['val'])
+
+cs = CornerStone260(port = ports['monochromator'])
 
 if arguments["GUI"]['val']:
 	print "TODO: Call GUI"

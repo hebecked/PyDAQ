@@ -7,6 +7,7 @@ from bin.DAQ.DAQ_frontend import DAQ_handler
 import multiprocessing
 import time
 import bin.Data_IO as DIO
+import json
 
 """
 Definig and reading input parameters and config Files.
@@ -22,6 +23,7 @@ parser.add_argument( "GUI", "-g", bool, group="config", default=False, help='Set
 #parser.add_argument( "XYZ_ScannerPort", "-sp", str, group="XYZ_Scanner", default=None, help='Sets the com port for the XYZ Scanner.', required=True)
 #parser.add_argument( "MonochromatorPort", "-mp", str, group="Monochromator", default=None, help='Sets the com port for the Monochromator.', required=True)
 #parser.add_argument( "RotationalPlatformPort", "-rp", str, group="RotationalPlatform", default=None, help='Sets the port for the RotationalPlatform.', required=True)
+parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
 parser.add_argument( "XYZ_ScannerSafetyZone", "-ssz", list, group="XYZ_Scanner", default=[0,100], help='Please supply a safety range along the x-axis for your experiment in units of percent.', multiargs=True, multiargsn=2, required=True)
 
 #TODo add flags for showing plots in command line mode
@@ -40,7 +42,8 @@ path2outfile = os.path.split(os.path.abspath(sys.modules['__main__'].__file__))[
 outfile = os.path.join(path2outfile, arguments["OutputFile"]["val"] + time.strftime("_%d.%m.%y_%H.%M.result"))
 
 #simple for the beginning, do error handling LATER
-ports=DIO.serialports().find_all_devices()
+
+ports=DIO.serialports().get_ports(refresh=arguments['ReadPorts']['val'])
 #ports={'monochromator':arguments["MonochromatorPort"]['val'], "xyz-scanner":arguments['XYZ_ScannerPort']['val'], 'sLockIn':arguments["SignalLockInPort"]['val'], 'rLockIn':arguments["ReferenceLockInPort"]['val'], 'rotPlatform':arguments["RotationalPlatformPort"]['val']}
 daq=DAQ_handler(arguments["InstructionFile"]['val'], ports, outfile)
 

@@ -6,24 +6,28 @@ from bin.lockIn import lockin
 import os, sys
 import numpy as np
 import time
+import bin.Data_IO as DIO
 
 
 
 parser=parsers("This Program is meant as a DAQ for a hardware setup in the Astroparticle group of the Humbolt University of Berlin\nIt is written and maintained by Dustin Hebecker, Mickael Rigault and Daniel Kuesters. (2015)\nFeel free to modify and reuse for non commercial purposes as long as credit is given to the original authors.\n")
 
-parser.add_argument( "PortReference", "-pr", str, group="LockIn", default=None, help='Used to define the Port for the reference LockIn')
-parser.add_argument( "PortSignal", "-ps", str, group="LockIn", default=None, help='Used to define the Port for the signal LockIn')
+#parser.add_argument( "PortReference", "-pr", str, group="LockIn", default=None, help='Used to define the Port for the reference LockIn')
+#parser.add_argument( "PortSignal", "-ps", str, group="LockIn", default=None, help='Used to define the Port for the signal LockIn')
 parser.add_argument( "Autogain", "-ag", bool, group="LockIn", default=False, help='Defines if autogain will be used.')
 parser.add_argument( "AverageValues", "-an", int, group="LockIn", default=10, help='Defines amount of measurements to average over.')
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
+parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 
+ports=DIO.serialports().get_ports(refresh=arguments['ReadPorts']['val'])
+
 if arguments["ReadSignalLockIn"]['val']:
-	signal=lockin(  port=arguments["PortSignal"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+	signal=lockin(  port=ports['sLockIn'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 if arguments["ReadReferenceLockIn"]['val']:
-	reference=lockin( port=arguments["PortReference"]['val'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
+	reference=lockin( port=ports['rLockIn'], avrgn=10, autogain=arguments['Autogain']['val'], timeconstant=0.3)
 
 
 if arguments["ReadSignalLockIn"]['val'] and not arguments["ReadReferenceLockIn"]['val']:
