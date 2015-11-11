@@ -7,6 +7,7 @@ import time
 import serial
 import struct
 import numpy as np
+import bin.Data_IO as DIO
 
 """
 Definig and reading input parameters and config Files.
@@ -23,7 +24,7 @@ parser.add_argument( "angle2r", "-a2r", float, group="RotationalPlatform", defau
 parser.add_argument( "angle3r", "-a3r", float, group="RotationalPlatform", default=None, help='Moves the rotational platform 3 relative to the current position in units of degree. Will be run before -i.')
 parser.add_argument( "init", "-i", bool, group="RotationalPlatform", default=True, help='Use if device is already initialized to avoid homing.')
 #parser.add_argument( "port", "-p", str, group="RotationalPlatform", default=None, help='Defines the Port to connect to the device.')
-parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
+parser.add_argument( "ReadPorts", "-rp", bool, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 

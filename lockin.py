@@ -18,7 +18,7 @@ parser.add_argument( "Autogain", "-ag", bool, group="LockIn", default=False, hel
 parser.add_argument( "AverageValues", "-an", int, group="LockIn", default=10, help='Defines amount of measurements to average over.')
 parser.add_argument( "ReadSignalLockIn", "-rsl", bool, group="LockIn", default=False, help='Will print the current value of the signal Lock-In to the comandline.')
 parser.add_argument( "ReadReferenceLockIn", "-rrl", bool, group="LockIn", default=False, help='Will print the current value of the reference Lock-In to the comandline.')
-parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
+parser.add_argument( "ReadPorts", "-rp", bool, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 

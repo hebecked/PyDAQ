@@ -6,6 +6,7 @@ import serial
 import time
 import numpy as np
 from bin.XYZ_Scanner.Scanner import Scanner
+import bin.Data_IO as DIO
 
 """
 Definig and reading input parameters and config Files.
@@ -24,7 +25,7 @@ parser.add_argument( "ZPos", "-zp", float,group="XYZ_Scanner",default=None,help=
 parser.add_argument( "XPosR", "-xpr", float,group="XYZ_Scanner",default=None,help='Moves in relative positions on the x-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning. (Not funktional due to firmwarebug)')
 parser.add_argument( "YPosR", "-ypr", float,group="XYZ_Scanner",default=None,help='Moves in relative positions on the y-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning. (Not funktional due to firmwarebug)')
 parser.add_argument( "ZPosR", "-zpr", float,group="XYZ_Scanner",default=None,help='Moves in relative positions on the z-axis. Supply a unit of measure with -su, the default is "mm". Only usefull with -i. Runs after absolute positioning. (Not funktional due to firmwarebug)')
-parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
+parser.add_argument( "ReadPorts", "-rp", bool, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 

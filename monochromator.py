@@ -5,7 +5,7 @@ from bin.parser_wrapper import parsers
 from bin.monochromator import CornerStone260
 import serial
 import time
-
+import bin.Data_IO as DIO
 
 """
 Definig and reading input parameters and config Files.
@@ -22,7 +22,7 @@ parser.add_argument( "Grating", "-g", int, group="Settings", default=None, help=
 parser.add_argument( "ShutterOpen", "-sO", bool, group="Settings", default=False, help='Will open the shutter')
 parser.add_argument( "ShutterClose", "-sC", bool, group="Settings", default=False, help='Will close the shutter')
 parser.add_argument( "Info", "-i", bool, group="Return", default=False, help='Gives a output on the current monochromator settings and type.') #possibly ad more Return options to obtain informations individually
-parser.add_argument( "ReadPorts", "-rp", str, group="Ports", default=False, help='Refreshes the device ports.')
+parser.add_argument( "ReadPorts", "-rp", bool, group="Ports", default=False, help='Refreshes the device ports.')
 
 arguments=parser.done(store_if_file_supplied=True)
 

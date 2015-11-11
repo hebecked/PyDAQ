@@ -566,8 +566,8 @@ class Scanner( object ):
         """
         self.ser.write("Go/")
         if wait_for_it:
-            print " I'll Wait for 4 secondes -> ToBeImproved"
-            time.sleep(4) # ToBe Chance
+            print "initializing axis, waiting for 5 secondes"
+            time.sleep(5) # ToBe Chance
             
         
     def _write_(self,prefix,axis,value,sequenced=False):
