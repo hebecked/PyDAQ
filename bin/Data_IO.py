@@ -61,7 +61,8 @@ class serialports:
 		    ports = ['COM' + str(i + 1) for i in range(256)]
 		elif self.sys.platform.startswith('linux') or self.sys.platform.startswith('cygwin'):
 		    # this is to exclude your current terminal "/dev/tty"
-		    ports = self.glob.glob('/dev/tty[A-Za-z]*')
+		    #ports = self.glob.glob('/dev/tty[A-Za-z]*')
+		    ports = self.glob.glob('/dev/ttyUSB*')
 		elif sys.platform.startswith('darwin'):
 		    ports = self.glob.glob('/dev/tty.*')
 		else:
@@ -77,47 +78,54 @@ class serialports:
 	def find_monochromator(self):
 		for port in self.ports:
 			try:
-				ser = self.serial.Serial(port, 9600, timeout=2)
+				ser = self.serial.Serial(port, 9600, timeout=0.5)
 				ser.flushInput()        
-				ser.write('INFO?' + "\r\n")
+				ser.write("\r\n" + 'INFO?' + "\r\n")
 				answer1 = ser.readline()
 				answer2 = ser.readline()
+				#print answer2
 				ser.close()
 				if answer2[:-2]=='INFO?':
 					self.mono=port
 					return port
-			except:
-				pass
+			except Exception as e:
+				print e
+				#pass
 		return ''
 
 	def find_lockin(self, IDN=None):
 		for port in self.ports:
 			try:
-				ser = self.serial.Serial(port, 19200, timeout=2, bytesize=8, parity='N', stopbits=1)
-				ser.flushInput()
-				ser.write("*IDN?" + '\n')
+				self.ser = self.serial.Serial(port, 19200, timeout=0.5, bytesize=8, parity='N', stopbits=1)
+				self.ser.flushInput()
+				self.ser.flushOutput()
+				self.ser.flush()
+				self.ser.write('\n' + "*IDN?" + '\n')
 				answer = self._read_LI()
 				self.ser.close()
-				if answere==IDN or IDN==None:
+				if answer==IDN or IDN==None:		
 					return port
-			except:
+			except IOError:
 				pass
 		return ''
 
 
 	def find_sig_lockin(self):
-		self.sig=self.find_lockin(self, IDN=None)
+		self.sig=self.find_lockin(IDN="Stanford_Research_Systems,SR830,s/n53701,ver1.07 ")
 		return self.sig
 
 	def find_ref_lockin(self):
-		self.ref=self.find_lockin(self, IDN=None)
+		self.ref=self.find_lockin(IDN="Stanford_Research_Systems,SR830,s/n53700,ver1.07 ")
 		return self.ref
 
 	def _read_LI(self):
 		list_=[]
 		help=0
+		counter=0
 		while help!='\r':
 			help=self.ser.read()
+			if help=='':
+				raise IOError("Not the right port ... maybe next time ;)")
 			list_.append(help)
 		return ''.join(list_[0:-1])
 
@@ -125,29 +133,34 @@ class serialports:
 	def find_rot_platform(self):
 		for port in self.ports:
 			try:
-				self.ser=serial.Serial(port ,115200, rtscts=True)
+				self.ser=self.serial.Serial(port ,115200, rtscts=True, timeout=0.5)
 				self.ser.flushInput()
 				self.ser.flushOutput()
 				self.ser.flush()
-				req_packet =  self.makePacket(commands.HW_REQ_INFO,,,self._dest)
-				packet=struct.pack("H",0x0005)
+				packet=self.struct.pack("H",0x0005)
 				packet+="\x00"
 				packet+="\x00"
 				packet+="\x11"
 				packet+="\x01"
 				self.ser.write(packet)
+				#self.ser.write(packet)
+				#self.ser.write(packet)
+				#recieved=""
+				#for i in range(90):
+				#	recieved+=self.ser.read()
 				recieved=self.ser.read(size=90)
 				self.ser.close()
-				header = recieved[:6]
-				msg_id, length, dest, source = struct.unpack('<HHBB', header)
-				dest ^= 0x80 # Turn off 0x80.
-				data = recieved[6 : 6 + length]
-				serial_number = str(data[0:4]).encode('hex')
-				if serial_number is int():
+				#header = recieved[:6]
+				#msg_id, length, dest, source = self.struct.unpack('<HHBB', header)
+				#dest ^= 0x80 # Turn off 0x80.
+				#data = recieved[6 : 6 + length]
+				#serial_number = str(data[0:4]).encode('hex')
+				if len(recieved)==90:
 					self.rot=port
 					return port
-			except:
-				pass
+			except Exception as e:
+				print e
+				#pass
 		return ''
 
 
@@ -162,21 +175,25 @@ class serialports:
 			elif port==self.rot:
 				continue
 			else:
-				if self.xyz!='':
+				if self.xyz!='' and type(self.xyz)==str(): 
 					self.xyz=[self.xyz]
 					self.xyz.append(port)
-				else
+				else:
 					self.xyz=port
 		return self.xyz
 
 	def find_all_devices(self):
+		print "looking for devices..."
+		self.find_rot_platform()
+		i=self.ports.index(self.rot)
+		del self.ports[i]
 		self.find_monochromator()
 		self.find_sig_lockin()
 		self.find_ref_lockin()
-		self.find_rot_platform()
-		self.xyz=find_xyz()
-
-		return {'monochromator':self.mono, "sig_lockin":self.sig,  "ref_lockin":self.ref, "rot_platform":self.rot, "XYZ_Scanner":self.xyz}
+		self.find_xyz()
+		print "Done"
+		return {'monochromator':self.mono, "xyz-scanner":self.xyz, 'sLockIn':self.sig, 'rLockIn':self.ref, 'rotPlatform':self.rot}
+		#return {'monochromator':self.mono, "sig_lockin":self.sig,  "ref_lockin":self.ref, "rot_platform":self.rot, "XYZ_Scanner":self.xyz}
 
 
 class instructions(object):

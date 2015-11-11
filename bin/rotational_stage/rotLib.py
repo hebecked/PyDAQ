@@ -102,7 +102,7 @@ class rotControler:
         self.instruction(self.makePacket( commands.MGMSG_HW_NO_FLASH_PROGRAMMING,"\x00","\x00","\x23"))
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         req_packet =  self.makePacket(commands.HW_REQ_INFO,"\x00","\x00",self._dest)
-        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=90)    
+        hw_info=self.queryInstruction(req_packet, commands.HW_GET_INFO, expectedB=90)
         self._serial_number = str(hw_info["data"][0:4]).encode('hex')
         self._model_number = str(hw_info["data"][4:12]).replace('\x00', '').strip()
         self._hw_type = struct.unpack('<H', str(hw_info["data"][12:14]))[0] ## should be 44 or 45 as integer. 45=> 'Multi-channel controller motherboard',44=>'Brushless DC controller',else => 'Unknown type: {}'.format(hw_type_int)
