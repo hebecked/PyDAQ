@@ -48,7 +48,7 @@ class serialports:
 	import sys
 	import glob
 	import serial
-
+	import struct
 
 	def __init__(self):
 		"""Lists serial ports
@@ -67,6 +67,11 @@ class serialports:
 		else:
 		    raise EnvironmentError('Unsupported platform')
 		self.ports=ports
+		self.sig=''
+		self.ref=''
+		self.mono=''
+		self.rot=''
+		self.xyz=''
 		#alternatively python -m serial.tools.list_ports
 
 	def find_monochromator(self):
@@ -79,6 +84,7 @@ class serialports:
 				answer2 = ser.readline()
 				ser.close()
 				if answer2[:-2]=='INFO?':
+					self.mono=port
 					return port
 			except:
 				pass
@@ -100,10 +106,12 @@ class serialports:
 
 
 	def find_sig_lockin(self):
-		return self.find_lockin(self, IDN=None)
+		self.sig=self.find_lockin(self, IDN=None)
+		return self.sig
 
 	def find_ref_lockin(self):
-		return self.find_lockin(self, IDN=None)
+		self.ref=self.find_lockin(self, IDN=None)
+		return self.ref
 
 	def _read_LI(self):
 		list_=[]
@@ -115,14 +123,60 @@ class serialports:
 
 
 	def find_rot_platform(self):
+		for port in self.ports:
+			try:
+				self.ser=serial.Serial(port ,115200, rtscts=True)
+				self.ser.flushInput()
+				self.ser.flushOutput()
+				self.ser.flush()
+				req_packet =  self.makePacket(commands.HW_REQ_INFO,,,self._dest)
+				packet=struct.pack("H",0x0005)
+				packet+="\x00"
+				packet+="\x00"
+				packet+="\x11"
+				packet+="\x01"
+				self.ser.write(packet)
+				recieved=self.ser.read(size=90)
+				self.ser.close()
+				header = recieved[:6]
+				msg_id, length, dest, source = struct.unpack('<HHBB', header)
+				dest ^= 0x80 # Turn off 0x80.
+				data = recieved[6 : 6 + length]
+				serial_number = str(data[0:4]).encode('hex')
+				if serial_number is int():
+					self.rot=port
+					return port
+			except:
+				pass
 		return ''
 
 
 	def find_xyz(self):
-		return ''
+		for port in self.ports:
+			if port==self.mono:
+				continue
+			elif port==self.sig:
+				continue
+			elif port==self.ref:
+				continue
+			elif port==self.rot:
+				continue
+			else:
+				if self.xyz!='':
+					self.xyz=[self.xyz]
+					self.xyz.append(port)
+				else
+					self.xyz=port
+		return self.xyz
 
 	def find_all_devices(self):
-		return {'monochromator':self.find_monochromator(), "sig_lockin":self.find_sig_lockin(),  "ref_lockin":self.find_ref_lockin()}
+		self.find_monochromator()
+		self.find_sig_lockin()
+		self.find_ref_lockin()
+		self.find_rot_platform()
+		self.xyz=find_xyz()
+
+		return {'monochromator':self.mono, "sig_lockin":self.sig,  "ref_lockin":self.ref, "rot_platform":self.rot, "XYZ_Scanner":self.xyz}
 
 
 class instructions(object):
