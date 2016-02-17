@@ -49,6 +49,7 @@ class serialports:
 	import glob
 	import serial
 	import struct
+	import json
 
 	def __init__(self):
 		"""Lists serial ports
@@ -185,8 +186,9 @@ class serialports:
 	def find_all_devices(self):
 		print "looking for devices..."
 		self.find_rot_platform()
-		i=self.ports.index(self.rot)
-		del self.ports[i]
+		if self.rot!="":
+			i=self.ports.index(self.rot)
+			del self.ports[i]
 		self.find_monochromator()
 		self.find_sig_lockin()
 		self.find_ref_lockin()
@@ -194,6 +196,18 @@ class serialports:
 		print "Done"
 		return {'monochromator':self.mono, "xyz-scanner":self.xyz, 'sLockIn':self.sig, 'rLockIn':self.ref, 'rotPlatform':self.rot}
 		#return {'monochromator':self.mono, "sig_lockin":self.sig,  "ref_lockin":self.ref, "rot_platform":self.rot, "XYZ_Scanner":self.xyz}
+
+
+	def get_ports(self,refresh=False, path='configs/ports.store'):
+		if refresh:
+			ports=self.find_all_devices()
+			with open(path,'w') as file_:
+				self.json.dump(ports,file_)
+		else:
+			with open(path,'r') as file_:
+				ports=self.json.load(file_)
+		return ports
+
 
 
 class instructions(object):
