@@ -1,0 +1,24 @@
+# v=1 Instruction file created with instruction_maker (by Dustin hebecker).
+# wavelength grating filter avrgn readLockinr readLockins xpos ypos zpos xyz_pos_type vx vy vz alpha beta gamma rot_pos_type dela
+0 240 -1 5 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+1 250 -1 5 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+2 260 -1 5 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+3 270 -1 5 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+4 280 -1 5 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+5 290 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+6 300 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+7 310 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+8 320 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+9 330 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+10 340 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+11 350 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+12 360 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+13 370 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+14 380 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+15 390 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+16 400 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+17 410 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+18 420 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+19 430 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+20 440 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
+21 450 -1 6 10 True True 0 0 0 idl -1 -1 -1 0 0 0 idl 0.5 
