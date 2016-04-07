@@ -1,11 +1,3 @@
-Modify dynamic plot
-
-(implement 1 plot (axis1 choose, axis2 choose) in main window)
-(add button for additional windows with plot allowing to do the same)
-plot library should only supply the 'image'/handler
-
-(ad __del__ functionality to handlers)
-
 #!/usr/bin/python2.7
 
 
@@ -16,7 +8,6 @@ import numpy as np
 class live_plots:
 	"""A small class for continuusly updating plots"""
 
-#also add 3d
 
 	def __init__(self,x_min,x_max,x_label="Time",y_label="Temperature [C]",y2_label="Humidity [%]",color1='r',color2='b',two_plots=False):#variable x and or y autoscale (maybe a default and then additional function?)
 		self.color1=color1
@@ -65,6 +56,9 @@ class live_plots:
 		self.figure.canvas.draw()
 		self.figure.canvas.flush_events()
 
+
+	def autoscale(self):
+		self.ax1.set_xlim(np.min(self.x),np.max(self.x))
 
 
 	def update_time(self,x,y1,y2):

@@ -6,6 +6,7 @@ from ..monochromator import CornerStone260
 from ..XYZ_Scanner import Scanner
 from .. import lockIn
 from ..rotational_stage import rotLib #rotStages
+from ..dynamicPlot.dynamic_plot import live_plots
 
 class DAQ_handler(object):
 	"""docstring for DAQ_handler"""
@@ -16,6 +17,7 @@ class DAQ_handler(object):
 		self.datastorage=[]
 		self.resultfile=files(resultfile)
 		self.resultfile.init_file("#Nr Wavelength Ref RefErr Sig SigErr RefFreq RefFreqErr RefPhase RefPhaseErr SigFreq SigFreqErr SigPhase SigPhaseErr Misc\n",  override=False)
+		self.ploting=False
 		 #init devices if aplicable allow access to device in main programm if possible
 		self.devices={}
 		if self.instructions.monochromator:
@@ -65,6 +67,19 @@ class DAQ_handler(object):
 						return 'Running'
 		#include is running test here
 		return 'Running'
+
+	def plot(self):
+		if !self.ploting:
+			self.plotframe = live_plots(0,1,x_label="Step",y_label="Signal/Reference [A.U.]",y2_label=" ",color1='r',color2='b',two_plots=False):
+		number = self.datastorage[-1]['#']
+		if "sLockIn" in self.datastorage[-1] and "rLockIn" in self.datastorage[-1]:
+			value = self.datastorage[-1]["sLockIn"]/self.datastorage[-1]["rLockIn"]
+		else:
+			value = -1
+		self.plotframe.update(number,value)
+		self.plotframe.autoscale()
+
+
 
 	def send_signal(self,signal):
 		if signal=="stop" or signal=="pause" or signal=="continue":
