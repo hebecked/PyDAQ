@@ -127,7 +127,7 @@ class DAQ(multiprocessing.Process):
 
             self.pipe.send(results)
             time_left=float(time.time()-timestart)*float(len(self.instructions.instructions)-cn)/float(cn)
-            print "%02d:%02d:%02d" % (time_left/3600, time_left/60, time_left%60) , " left"
+            print "%02d:%02d:%02d" % (time_left/3600, (time_left/60)%60,time_left%60) , " left"
             cn+=1
         self.pipe.send('DONE')
         return	
