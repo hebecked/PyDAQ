@@ -115,7 +115,7 @@ class lockin:
  		index_old=2
  		change=20
  		extra=0
- 		while change!=0 and extra=1:
+ 		while change!=0 and extra==1:
  			if change==0:#check at the end of the cycle if there are some slow changes going on
  				extra=1
  			else:

@@ -75,7 +75,7 @@ class parsers:
 						try:
 							val=self.elements[name]['type'](self.elements[name]["default"])
 						except:
-							raise valueError(str(config_args[self.elements[name]['group']][name]) + " is not " + str(self.elements[name]['type']))
+							raise ValueError(str(config_args[self.elements[name]['group']][name]) + " is not " + str(self.elements[name]['type']))
 						self.elements[name].update({'val': val, 'status': "set"})
 					else:
 						if self.elements[name]['required']:

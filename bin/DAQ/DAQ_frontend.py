@@ -69,14 +69,17 @@ class DAQ_handler(object):
 		return 'Running'
 
 	def plot(self):
-		if !self.ploting:
-			self.plotframe = live_plots(0,1,x_label="Step",y_label="Signal/Reference [A.U.]",y2_label=" ",color1='r',color2='b',two_plots=False):
+		if not self.ploting:
+			self.plotframe = live_plots(0,1,x_label="Step",y_label="Signal/Reference [A.U.]",y2_label=" ",color1='r',color2='b',two_plots=False)
+			self.ploting = True
+		if len(self.datastorage) < 1:
+			return
 		number = self.datastorage[-1]['#']
 		if "sLockIn" in self.datastorage[-1] and "rLockIn" in self.datastorage[-1]:
 			value = self.datastorage[-1]["sLockIn"]/self.datastorage[-1]["rLockIn"]
 		else:
 			value = -1
-		self.plotframe.update(number,value)
+		self.plotframe.update(number,value, "placeholder")
 		self.plotframe.autoscale()
 
 

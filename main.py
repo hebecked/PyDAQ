@@ -18,7 +18,7 @@ parser.add_argument( "InstructionFile", "-i", str, group="config", default=None,
 parser.add_argument( "InstructionFileHelp", "-ih", bool, group=None, default=False, help='Gives out the format of the instruction file and exits.')
 parser.add_argument( "OutputFile", "-o", str, group="config", default="results.txt", help='Supply a file name for the results of the measurements')
 parser.add_argument( "GUI", "-g", bool, group="config", default=False, help='Set this flag to use a graphical user interface to configure and supervise the DAQ. Runs won\'t start right away')
-parser.add_argument( "Plot_data", "-P", list, group="config", default=True, help='Gives a live feedback plot of the current measurement.', multiargs=False, multiargsn=1, required=False)
+parser.add_argument( "Plot_data", "-P", bool, group="config", default=True, help='Gives a live feedback plot of the current measurement.', multiargs=False, multiargsn=1, required=False)
 #parser.add_argument( "SignalLockInPort", "-slp", str, group="LockIn", default=None, help='Sets the com port for the signal Lock-In.', required=True)
 #parser.add_argument( "ReferenceLockInPort", "-rlp", str, group="LockIn", default=None, help='Sets the com port for the reference Lock-In.', required=True)
 #parser.add_argument( "XYZ_ScannerPort", "-sp", str, group="XYZ_Scanner", default=None, help='Sets the com port for the XYZ Scanner.', required=True)
