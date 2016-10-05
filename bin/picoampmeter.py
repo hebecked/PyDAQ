@@ -3,7 +3,7 @@ import os, sys
 import numpy as np
 import time
 
-class lockin:
+class picoamp:
 
 	def __init__(self,port, avrgn=10, autogain=False, slep_milli=500):
 		self.port=port#...
@@ -37,7 +37,7 @@ class lockin:
 		#setup - if a Serial object can't be created, a SerialException will be raised.
 		while True:
 			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
+				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.parity, stopbits=self.stopbits)
 				#break out of while loop when connection is made
 				break
 			except serial.SerialException:
@@ -49,7 +49,7 @@ class lockin:
 		self.ser.close()
 		return answer
 
- 	def _read_LI(self):
+	def _read_LI(self):
 		list_=[]
 		help=0
 		while help!='\r':
@@ -60,7 +60,7 @@ class lockin:
 
 
 
-'''	def StandardData(self,N=10):
+	'''	def StandardData(self,N=10):
 		#setup - if a Serial object can't be created, a SerialException will be raised.
 		while True:
 			try:
@@ -105,15 +105,13 @@ class lockin:
 			self.ser.write('FREQ?' + self.sendtermchar)
 			freq=float(self._read_LI())
 		self.ser.close()
-		return ampl,phase,freq '''
+		return ampl,phase,freq 
+		'''
 
-
-
-
-	def get_channel_1():
+	def get_channel_1(self):
 		return self.SerialQuery(':FORM:ELEM CURR1; :MEAS?')
 
-	def get_channel_2():
+	def get_channel_2(self):
 		return self.SerialQuery(':FORM:ELEM CURR2; :MEAS?')
 
 # try auto timeconstant from frequency*100 calculation
