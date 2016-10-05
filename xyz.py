@@ -44,7 +44,7 @@ else:
 	unit="mm"
 
 if arguments["XPos"]['status']=="set" or arguments["YPos"]['status']=="set" or arguments["ZPos"]['status']=="set":
-	x,y,z=sc.read_position()
+	# x,y,z=sc.read_position()
 	if arguments["XPos"]['status']=="set":
 		x=arguments["XPos"]["val"]
 	if arguments["YPos"]['status']=="set":
