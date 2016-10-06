@@ -16,9 +16,6 @@ class picoamp:
 		self.slep_milli=slep_milli
 		self.parity=serial.PARITY_NONE
 		self.stopbits=1
-		
-	def SerialCommand(self,command):
-		#setup - if a Serial object can't be created, a SerialException will be raised.
 		while True:
 			try:
 				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
@@ -27,26 +24,16 @@ class picoamp:
 			except serial.SerialException:
 				print 'waiting for device ' + self.port + ' to be available'
 				time.sleep(3)
+		
+	def SerialCommand(self,command):
 		self.ser.flushInput()        
 		self.ser.write(command + self.sendtermchar)
-		#answer = self._read_LI()
-		self.ser.close()
 		return
 
 	def SerialQuery(self,command):
-		#setup - if a Serial object can't be created, a SerialException will be raised.
-		while True:
-			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.parity, stopbits=self.stopbits)
-				#break out of while loop when connection is made
-				break
-			except serial.SerialException:
-				print 'waiting for device ' + self.port + ' to be available'
-				time.sleep(3)
 		self.ser.flushInput()        
 		self.ser.write(command + self.sendtermchar)
 		answer = self._read_LI()
-		self.ser.close()
 		return answer
 
 	def _read_LI(self):
@@ -113,6 +100,10 @@ class picoamp:
 
 	def get_channel_2(self):
 		return self.SerialQuery(':FORM:ELEM CURR2; :MEAS?')
+
+	def __del__(self):
+		self.ser.close()
+
 
 # try auto timeconstant from frequency*100 calculation
 
