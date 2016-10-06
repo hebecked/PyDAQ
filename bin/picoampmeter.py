@@ -18,7 +18,7 @@ class picoamp:
 		self.stopbits=1
 		while True:
 			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
+				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.parity, stopbits=self.stopbits)
 				#break out of while loop when connection is made
 				break
 			except serial.SerialException:

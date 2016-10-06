@@ -28,8 +28,8 @@ y=159
 z=334
 	
 f=open('PD_pos_meas.csv','w')
-
 f.write('z-pos\ty-pos\tsig\tsigerr\tref\treferr\tdark\tdarkerr\tdarkref\tdarkreferr\n')
+f.close()
 
 print time.gmtime()
 
@@ -42,21 +42,23 @@ for i in range(20):
 		ROT_devices.move( 0, -20, rel=False, wait=True)
 		for k in range(10):
 			ref.append(float(PAM.get_channel_1()))
-			time.sleep(0.1)
+			time.sleep(0.05)
 			sig.append(float(PAM.get_channel_2()))
-			time.sleep(0.1)
+			time.sleep(0.05)
 		string+=str(np.mean(sig)) + '\t' + str(np.std(sig)) + '\t' + str(np.mean(ref)) + '\t' + str(np.std(ref)) + '\t'
 		sig=[]
 		ref=[]
 		ROT_devices.move( 0, 10, rel=False, wait=True)
 		for k in range(10):
 			ref.append(float(PAM.get_channel_1()))
-			time.sleep(0.1)
+			time.sleep(0.05)
 			sig.append(float(PAM.get_channel_2()))
-			time.sleep(0.1)
+			time.sleep(0.05)
 		string+=str(np.mean(sig)) + '\t' + str(np.std(sig)) + '\t' + str(np.mean(ref)) + '\t' + str(np.std(ref)) + '\n'
+		f=open('PD_pos_meas.csv','a')
 		f.write(string)
+		f.close()
 
-f.close()
+
 
 print time.gmtime()
