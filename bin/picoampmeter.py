@@ -14,12 +14,14 @@ class lockin:
 		self.bytesize=8
 		self.sendtermchar='\n'
 		self.slep_milli=slep_milli
+		self.parity=serial.PARITY_NONE
+		self.stopbits=1
 		
 	def SerialCommand(self,command):
 		#setup - if a Serial object can't be created, a SerialException will be raised.
 		while True:
 			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize,parity='N',stopbits=1)
+				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
 				#break out of while loop when connection is made
 				break
 			except serial.SerialException:
@@ -35,7 +37,7 @@ class lockin:
 		#setup - if a Serial object can't be created, a SerialException will be raised.
 		while True:
 			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize,parity='N',stopbits=1)
+				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
 				#break out of while loop when connection is made
 				break
 			except serial.SerialException:
@@ -56,13 +58,13 @@ class lockin:
 			list_.append(help)
 		return ''.join(list_[0:-1])
 
-	def StandardData(self,N=10):
+
+
+'''	def StandardData(self,N=10):
 		#setup - if a Serial object can't be created, a SerialException will be raised.
-		if self.autogain and not self.AutoGain():
-			return -1,0,-1,0,-1,0
 		while True:
 			try:
-				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize,parity='N',stopbits=1)
+				self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout, bytesize=self.bytesize, parity=self.party, stopbits=self.stopbits)
 				#break out of while loop when connection is made
 				break
 			except serial.SerialException:
@@ -103,48 +105,16 @@ class lockin:
 			self.ser.write('FREQ?' + self.sendtermchar)
 			freq=float(self._read_LI())
 		self.ser.close()
-		return ampl,phase,freq
+		return ampl,phase,freq '''
 
 
 
- 	def AutoGain(self):
- 		list_=[2e-15,5e-15,1e-14,2e-14,5e-14,1e-13,2e-13,5e-13,1e-12,2e-12,5e-12,1e-11,2e-11,5e-11,1e-10,2e-10,5e-10,1e-9,2e-9,5e-9,1e-8,2e-8,5e-8,1e-7,2e-7,5e-7,1e-6]
- 		index_old=2
- 		change=20
- 		while change!=0:
- 			temp=self.SerialQuery('OUTP?3')
- 			#print temp
- 			value=float(temp)
- 			index=np.argmin(np.abs(value-np.asarray(list_)))
- 			if value>list_[index]:
- 				if index<26:
- 					index=index+1
- 				else:
- 					return False
- 			self.SerialCommand('SENS' + str(index))
- 			change=index_old-index
- 			index_old=index
- 			time.sleep(self.timeconstant) #Factor 2 protects also for slow changes
- 		return True
 
-	def get_phase(self):
-		return self.SerialQuery('OUTP?4')
+	def get_channel_1():
+		return self.SerialQuery(':FORM:ELEM CURR1; :MEAS?')
 
-
-	def set_gain(self,range):
-		list_=[2e-15,5e-15,1e-14,2e-14,5e-14,1e-13,2e-13,5e-13,1e-12,2e-12,5e-12,1e-11,2e-11,5e-11,1e-10,2e-10,5e-10,1e-9,2e-9,5e-9,1e-8,2e-8,5e-8,1e-7,2e-7,5e-7,1e-6]
-		self.ser.write()
-		self.range=range
-
-
-	def get_frequency(self):
-		return self.SerialQuery('FREQ?')
-
-	def get_amplitude(self):
-		return self.SerialQuery('OUTP?3')
-
-	def get_phase(self):
-		return self.SerialQuery('OUTP?4')
+	def get_channel_2():
+		return self.SerialQuery(':FORM:ELEM CURR2; :MEAS?')
 
 # try auto timeconstant from frequency*100 calculation
 
